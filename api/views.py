@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .serializer import InvoiceSerializer
+from .models import Invoice
 
 class InvoiceAPIView(APIView):
 
@@ -20,3 +21,12 @@ class InvoiceAPIView(APIView):
                 "message": "failed to create new invoice", 
                 "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        invoices = Invoice.objects.all()
+        serializer = InvoiceSerializer(invoices, many=True)
+        return Response(
+            {
+                "message": "successfully retrieved invoices", 
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
