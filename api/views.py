@@ -9,6 +9,12 @@ class InvoiceAPIView(APIView):
 
     def post(self, request):
         invoice_details = request.data.pop('invoice_details', [])
+        if not invoice_details:
+            return Response(
+                {
+                    "message": "failed to create new invoice", 
+                    "errors": "invoice details is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
         for detail in invoice_details:
             if 'price' not in detail:
                 detail['price'] = float(float(detail['quantity']) * float(detail['unit_price']))
