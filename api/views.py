@@ -8,6 +8,12 @@ from .models import Invoice
 class InvoiceAPIView(APIView):
 
     def post(self, request):
+        invoice_details = request.data.pop('invoice_details', [])
+        for detail in invoice_details:
+            if 'price' not in detail:
+                detail['price'] = float(float(detail['quantity']) * float(detail['unit_price']))
+        request.data['invoice_details'] = invoice_details
+
         serializer = InvoiceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
