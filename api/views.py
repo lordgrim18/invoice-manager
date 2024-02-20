@@ -136,6 +136,30 @@ class InvoiceAPIView(APIView):
                 "data": None
             }, status=status.HTTP_200_OK)
     
+class SingleInvoiceAPIView(APIView):
+    """
+    API endpoints that allows a single invoice to be retrieved.
+    The following methods have been implemented:
+
+    - get   : retrieve a single invoice
+            : returns the customer name, invoice date and entire invoice details of the invoice
+
+    """
+    def get(self, request, invoice_id):
+        if not Invoice.objects.filter(id=invoice_id).exists():
+            return Response(
+                {
+                    "message": "invoice not found", 
+                    "data": None
+                }, status=status.HTTP_404_NOT_FOUND)
+        invoice = Invoice.objects.get(id=invoice_id)
+        serializer = InvoiceSerializer(invoice)
+        return Response(
+            {
+                "message": "successfully retrieved invoice", 
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+    
 class InvoiceDetailAPIView(APIView):
     """
     API endpoints that allows invoice details to be retrieved and deleted.
