@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializer import InvoiceSerializer
-from .models import Invoice
+from .serializer import InvoiceSerializer, InvoiceDetailSerializer
+from .models import Invoice, InvoiceDetail
 
 class InvoiceAPIView(APIView):
     """
@@ -20,10 +20,14 @@ class InvoiceAPIView(APIView):
     - put   : update an existing invoice
             : enter the the customer name, invoice date and entire invoice details in the request body
             : note that the entire previous invoice details will be replaced with the new details
+            : remember that invoice date has to be manually updated if needed and doesn't happen automatically
+            : this means that the invoice date will not be updated if it is not entered in the request body
 
     - patch : update an existing invoice
             : enter the the customer name or invoice date in the request body
             : note that the entire previous invoice details will be retained and cannot be updated using this endpoint
+            : remember that invoice date has to be manually updated if needed and doesn't happen automatically
+            : this means that the invoice date will not be updated if it is not entered in the request body
 
     - delete: delete an existing invoice
 
@@ -132,3 +136,53 @@ class InvoiceAPIView(APIView):
                 "data": None
             }, status=status.HTTP_200_OK)
     
+class InvoiceDetailAPIView(APIView):
+    """
+    API endpoints that allows invoice details to be retrieved and deleted.
+    The following methods have been implemented:
+
+    -patch  : update any aspect existing invoice detail
+            : enter any of the description, quantity, unit price or price in the request body
+            : to completely update an invoice detail, use the invoice endpoint
+
+    - delete: delete an existing invoice detail
+
+    """
+    
+    def patch(self, request, invoice_detail_id):
+        if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
+            return Response(
+                {
+                    "message": "invoice detail not found", 
+                    "data": None
+                }, status=status.HTTP_404_NOT_FOUND)
+        
+        invoice_detail = InvoiceDetail.objects.get(id=invoice_detail_id)
+        serializer = InvoiceDetailSerializer(invoice_detail, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "message": "successfully updated invoice detail", 
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "message": "failed to update invoice detail", 
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, invoice_detail_id):
+        if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
+            return Response(
+                {
+                    "message": "invoice detail not found", 
+                    "data": None
+                }, status=status.HTTP_404_NOT_FOUND)
+        invoice_detail = InvoiceDetail.objects.get(id=invoice_detail_id)
+        invoice_detail.delete()
+        return Response(
+            {
+                "message": "successfully deleted invoice detail", 
+                "data": None
+            }, status=status.HTTP_200_OK)

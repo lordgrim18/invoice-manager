@@ -14,6 +14,17 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             'price'
             ]
         
+    def update(self, instance, validated_data):
+        instance.description = validated_data.get('description', instance.description)
+        instance.quantity = validated_data.get('quantity', instance.quantity)
+        instance.unit_price = validated_data.get('unit_price', instance.unit_price)
+        instance.price = validated_data.get('price', instance.price)
+        if instance.quantity or instance.unit_price:
+            if not validated_data.get('price'):
+                instance.price = float(instance.quantity) * float(instance.unit_price)
+        instance.save()
+        return instance
+        
 class InvoiceSerializer(serializers.ModelSerializer):
     # id = serializers.CharField(read_only=True)
     invoice_details = InvoiceDetailSerializer(many=True)
