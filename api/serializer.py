@@ -47,11 +47,6 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
         return instance
     
-    def validate(self, data):
-        if not data.get('invoice_details'):
-            raise serializers.ValidationError("invoice_details is required")
-        return data
-    
     def to_representation(self, instance):
         response = super().to_representation(instance)
         response['invoice_date'] = instance.invoice_date.strftime('%Y-%m-%d')

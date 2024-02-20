@@ -25,7 +25,7 @@ class InvoiceAPIView(APIView):
         return Response(
             {
                 "message": "failed to create new invoice", 
-                "errors": serializer.errors
+                # "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request):
@@ -38,6 +38,28 @@ class InvoiceAPIView(APIView):
             }, status=status.HTTP_200_OK)
     
     def put(self, request, invoice_id):
+        if not Invoice.objects.filter(id=invoice_id).exists():
+            return Response(
+                {
+                    "message": "invoice not found", 
+                    "data": None
+                }, status=status.HTTP_404_NOT_FOUND)
+        invoice = Invoice.objects.get(id=invoice_id)
+        serializer = InvoiceSerializer(invoice, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "message": "successfully updated invoice", 
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "message": "failed to update invoice", 
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
             return Response(
                 {
