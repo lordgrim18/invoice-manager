@@ -13,7 +13,7 @@ class InvoiceAPIView(APIView):
             return Response(
                 {
                     "message": "failed to create new invoice", 
-                    "errors": "invoice details is required"
+                    "errors": "invoice details are required"
                 }, status=status.HTTP_400_BAD_REQUEST)
         for detail in invoice_details:
             if 'price' not in detail:
@@ -31,7 +31,7 @@ class InvoiceAPIView(APIView):
         return Response(
             {
                 "message": "failed to create new invoice", 
-                # "errors": serializer.errors
+                "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request):
@@ -73,6 +73,12 @@ class InvoiceAPIView(APIView):
                     "data": None
                 }, status=status.HTTP_404_NOT_FOUND)
         invoice = Invoice.objects.get(id=invoice_id)
+        if 'invoice_details' in request.data:
+            return Response(
+                {
+                    "message": "failed to update invoice", 
+                    "errors": "invoice details cannot be updated using this endpoint"
+                }, status=status.HTTP_400_BAD_REQUEST)
         serializer = InvoiceSerializer(invoice, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -100,4 +106,4 @@ class InvoiceAPIView(APIView):
             {
                 "message": "successfully deleted invoice", 
                 "data": None
-            }, status=status.HTTP_204_NO_CONTENT)
+            }, status=status.HTTP_200_OK)
