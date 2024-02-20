@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import Invoice, InvoiceDetail
 
 class InvoiceDetailSerializer(serializers.ModelSerializer):
-    price = serializers.SerializerMethodField()
 
     class Meta:
         model = InvoiceDetail
@@ -13,9 +12,6 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             'price'
             ]
         
-    def get_price(self, obj):
-        return obj.quantity * obj.unit_price
-    
 class InvoiceSerializer(serializers.ModelSerializer):
     invoice_details = InvoiceDetailSerializer(many=True)
     
@@ -38,3 +34,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         response['invoice_date'] = instance.invoice_date.strftime('%Y-%m-%d')
         return response
+    
+    def validate(self, data):
+        if not data.get('invoice_details'):
+            raise serializers.ValidationError("invoice_details is required")
+        return data
