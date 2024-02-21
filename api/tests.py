@@ -314,3 +314,82 @@ class InvoiceUpdateAPITest(APITestCase):
             self.assertEqual(response.data['message'], "failed to update invoice")
             self.assertIn('errors', response.data)
 
+class InvoicePartialUpdateAPITest(APITestCase):
+    def setUp(self):
+        self.invoice = Invoice.objects.create(
+            customer_name='John Doe',
+            invoice_date='2021-01-01T00:00:00Z'
+        )
+        self.invoice_detail_1 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 1',
+            quantity=10,
+            unit_price=100,
+            price=1000
+        )
+        self.invoice_detail_2 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 2',
+            quantity=5,
+            unit_price=50,
+            price=250
+        )
+        self.invoice_detail_3 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 3',
+            quantity=2,
+            unit_price=200,
+            price=400
+        )
+
+        self.invoice_valid_data = {
+            'customer_name': 'John Doe',
+            'invoice_date': '2021-01-01T00:00:00Z',
+        }
+
+        self.invoice_invalid_data_list = [
+            {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'description': 'Product 1',
+                    'quantity': 10,
+                    'unit_price': 100,
+                    'price': 1000
+                },
+            ]
+            },
+        ]
+
+    def test_partial_update_invoice_success__name_date(self):
+        response = self.client.patch(reverse('invoice-partial-update', kwargs={'invoice_id': self.invoice.id}), self.invoice_valid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "successfully updated invoice")
+        self.assertIn('data', response.data)
+    
+    def test_partial_update_invoice_success__name(self):
+        self.invoice_valid_data.pop('invoice_date')
+        response = self.client.patch(reverse('invoice-partial-update', kwargs={'invoice_id': self.invoice.id}), self.invoice_valid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "successfully updated invoice")
+        self.assertIn('data', response.data)
+
+    def test_partial_update_invoice_success__date(self):
+        self.invoice_valid_data.pop('customer_name')
+        response = self.client.patch(reverse('invoice-partial-update', kwargs={'invoice_id': self.invoice.id}), self.invoice_valid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "successfully updated invoice")
+        self.assertIn('data', response.data)
+
+    def test_partial_update_invoice_failure__empty(self):
+        response = self.client.patch(reverse('invoice-partial-update', kwargs={'invoice_id': self.invoice.id}), {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], "failed to update invoice")
+        self.assertIn('errors', response.data)
+
+    def test_partial_update_invoice_failure__invoice_details(self):
+        for invoice_invalid_data in self.invoice_invalid_data_list:
+            response = self.client.patch(reverse('invoice-partial-update', kwargs={'invoice_id': self.invoice.id}), invoice_invalid_data, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(response.data['message'], "failed to update invoice")
+            self.assertIn('errors', response.data)
