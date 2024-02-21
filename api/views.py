@@ -6,6 +6,7 @@ from django.db.models import Q
 
 from .serializer import InvoiceSerializer, InvoiceDetailSerializer
 from .models import Invoice, InvoiceDetail
+from .utils import CustomResponse
 
 class InvoiceAPIView(APIView):
     """
@@ -42,16 +43,8 @@ class InvoiceAPIView(APIView):
         serializer = InvoiceSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {
-                    "message": "successfully created new invoice", 
-                    "data": serializer.data
-                }, status=status.HTTP_201_CREATED)
-        return Response(
-            {
-                "message": "failed to create new invoice", 
-                "errors": serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return CustomResponse("invoice", "creation", data=serializer.data).created_response()
+        return CustomResponse("invoice", "creation", data=serializer.errors).failure_response()
     
     def get(self, request):
         invoices = Invoice.objects.all().prefetch_related('invoice_details')
@@ -90,62 +83,30 @@ class InvoiceAPIView(APIView):
     
     def put(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
-            return Response(
-                {
-                    "message": "invoice not found", 
-                    "data": None
-                }, status=status.HTTP_404_NOT_FOUND)
+            return CustomResponse("invoice", "update").not_found_response()
         invoice = Invoice.objects.get(id=invoice_id)
         serializer = InvoiceSerializer(invoice, data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {
-                    "message": "successfully updated invoice", 
-                    "data": serializer.data
-                }, status=status.HTTP_200_OK)
-        return Response(
-            {
-                "message": "failed to update invoice", 
-                "errors": serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return CustomResponse("invoice", "update", data=serializer.data).success_response()
+        return CustomResponse("invoice", "update", data=serializer.errors).failure_response()
     
     def patch(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
-            return Response(
-                {
-                    "message": "invoice not found", 
-                    "data": None
-                }, status=status.HTTP_404_NOT_FOUND)
+            return CustomResponse("invoice", "update").not_found_response()
         invoice = Invoice.objects.get(id=invoice_id)
         serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {
-                    "message": "successfully updated invoice", 
-                    "data": serializer.data
-                }, status=status.HTTP_200_OK)
-        return Response(
-            {
-                "message": "failed to update invoice", 
-                "errors": serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return CustomResponse("invoice", "update", data=serializer.data).success_response()
+        return CustomResponse("invoice", "update", data=serializer.errors).failure_response()
     
     def delete(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
-            return Response(
-                {
-                    "message": "invoice not found", 
-                    "data": None
-                }, status=status.HTTP_404_NOT_FOUND)
+            return CustomResponse("invoice", "deletion").not_found_response()
         invoice = Invoice.objects.get(id=invoice_id)
         invoice.delete()
-        return Response(
-            {
-                "message": "successfully deleted invoice", 
-                "data": None
-            }, status=status.HTTP_200_OK)
+        return CustomResponse("invoice", "deletion").success_response()
     
 class InvoiceDetailAPIView(APIView):
     """
@@ -161,38 +122,18 @@ class InvoiceDetailAPIView(APIView):
     """
     def patch(self, request, invoice_detail_id):
         if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
-            return Response(
-                {
-                    "message": "invoice detail not found", 
-                    "data": None
-                }, status=status.HTTP_404_NOT_FOUND)
+            return CustomResponse("invoice detail", "update").not_found_response()
         
         invoice_detail = InvoiceDetail.objects.get(id=invoice_detail_id)
         serializer = InvoiceDetailSerializer(invoice_detail, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {
-                    "message": "successfully updated invoice detail", 
-                    "data": serializer.data
-                }, status=status.HTTP_200_OK)
-        return Response(
-            {
-                "message": "failed to update invoice detail", 
-                "errors": serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return CustomResponse("invoice detail", "update", data=serializer.data).success_response()
+        return CustomResponse("invoice detail", "update", data=serializer.errors).failure_response()
 
     def delete(self, request, invoice_detail_id):
         if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
-            return Response(
-                {
-                    "message": "invoice detail not found", 
-                    "data": None
-                }, status=status.HTTP_404_NOT_FOUND)
+            return CustomResponse("invoice detail", "deletion").not_found_response()
         invoice_detail = InvoiceDetail.objects.get(id=invoice_detail_id)
         invoice_detail.delete()
-        return Response(
-            {
-                "message": "successfully deleted invoice detail", 
-                "data": None
-            }, status=status.HTTP_200_OK)
+        return CustomResponse("invoice detail", "deletion").success_response()
