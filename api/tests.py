@@ -393,3 +393,41 @@ class InvoicePartialUpdateAPITest(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(response.data['message'], "failed to update invoice")
             self.assertIn('errors', response.data)
+
+class InvoiceDeleteAPITest(APITestCase):
+    def setUp(self):
+        self.invoice = Invoice.objects.create(
+            customer_name='John Doe',
+            invoice_date='2021-01-01T00:00:00Z'
+        )
+        self.invoice_detail_1 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 1',
+            quantity=10,
+            unit_price=100,
+            price=1000
+        )
+        self.invoice_detail_2 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 2',
+            quantity=5,
+            unit_price=50,
+            price=250
+        )
+        self.invoice_detail_3 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 3',
+            quantity=2,
+            unit_price=200,
+            price=400
+        )
+
+    def test_delete_invoice_success(self):
+        response = self.client.delete(reverse('invoice-delete', kwargs={'invoice_id': self.invoice.id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "successfully deleted invoice")
+
+    def test_delete_invoice_failure__invalid_id(self):
+        response = self.client.delete(reverse('invoice-delete', kwargs={'invoice_id': 'invalid_id'}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['message'], "invoice not found")
