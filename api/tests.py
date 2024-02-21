@@ -128,3 +128,44 @@ class InvoiceCreateAPITest(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(response.data['message'], "failed to create new invoice")
             self.assertIn('errors', response.data)
+
+class InvoiceListAPITest(APITestCase):
+    def setUp(self):
+        self.invoice = Invoice.objects.create(
+            customer_name='John Doe'
+        )
+        self.invoice_detail_1 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 1',
+            quantity=10,
+            unit_price=100,
+            price=1000
+        )
+        self.invoice_detail_2 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 2',
+            quantity=5,
+            unit_price=50,
+            price=250
+        )
+        self.invoice_detail_3 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 3',
+            quantity=2,
+            unit_price=200,
+            price=400
+        )
+
+    def test_get_invoices_success(self):
+        response = self.client.get(reverse('invoice-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['data']), Invoice.objects.count())
+        self.assertEqual(response.data['message'], "successfully retrieved invoices")
+        self.assertIn('data', response.data)
+
+    def test_get_invoices_success__empty(self):
+        Invoice.objects.all().delete()
+        response = self.client.get(reverse('invoice-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "successfully retrieved invoices")
+        self.assertEqual(response.data['data'], [])
