@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Invoice, InvoiceDetail
+from datetime import datetime
 
 class InvoiceDetailSerializer(serializers.ModelSerializer):
     # id = serializers.CharField(read_only=True)
@@ -49,6 +50,7 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     # id = serializers.CharField(read_only=True)
     invoice_details = InvoiceDetailSerializer(many=True)
+    invoice_date = serializers.DateTimeField()
     
     class Meta:
         model = Invoice
@@ -89,5 +91,4 @@ class InvoiceSerializer(serializers.ModelSerializer):
         if not request.method == 'PATCH':
             if not data.get('invoice_details'):
                 raise serializers.ValidationError("invoice details cannot be empty")
-            return data
         return data
