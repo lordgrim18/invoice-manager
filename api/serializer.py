@@ -74,8 +74,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
         invoice_details_data = validated_data.get('invoice_details', [])
         if invoice_details_data:
             InvoiceDetail.objects.filter(invoice=instance).delete()
-        for detail_data in invoice_details_data:
-            InvoiceDetail.objects.create(invoice=instance, **detail_data)
+            for detail_data in invoice_details_data:
+                InvoiceDetail.objects.create(invoice=instance, **detail_data)
 
         return instance
     
@@ -83,3 +83,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         response['invoice_date'] = instance.invoice_date.strftime('%Y-%m-%d')
         return response
+    
+    def validate(self, data):
+        request = self.context.get('request')
+        if not request.method == 'PATCH':
+            if not data.get('invoice_details'):
+                raise serializers.ValidationError("invoice details cannot be empty")
+            return data
+        return data
