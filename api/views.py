@@ -138,7 +138,7 @@ class InvoiceDetailAPIView(APIView):
                 }, status=status.HTTP_404_NOT_FOUND)
         
         invoice_detail = InvoiceDetail.objects.get(id=invoice_detail_id)
-        serializer = InvoiceDetailSerializer(invoice_detail, data=request.data, partial=True)
+        serializer = InvoiceDetailSerializer(invoice_detail, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(
