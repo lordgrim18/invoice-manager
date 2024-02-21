@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
 
 from .serializer import InvoiceSerializer, InvoiceDetailSerializer
 from .models import Invoice, InvoiceDetail
@@ -49,7 +50,30 @@ class InvoiceAPIView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request):
-        invoices = Invoice.objects.all()
+        invoices = Invoice.objects.all().prefetch_related('invoice_details')
+        search_query = request.query_params.get('search', None)
+        if search_query:
+            invoices = invoices.filter(
+                Q(customer_name__icontains=search_query) | 
+                Q (invoice_details__description__icontains=search_query)
+                   ).distinct().prefetch_related('invoice_details')
+            
+        sort_by_fields = {
+            "customer": "customer_name",
+            "date": "invoice_date",
+            "description": "invoice_details__description",
+            "price": "invoice_details__price",
+            "quantity": "invoice_details__quantity",
+            "unit_price": "invoice_details__unit_price"
+        }
+        sort_by = request.query_params.get('sort')
+        if sort_by:
+            if sort_by.startswith("-"):
+                sort_by = f"-{sort_by_fields.get(sort_by[1:], 'invoice_date')}"
+            else:
+                sort_by = sort_by_fields.get(sort_by, '-invoice_date')
+            invoices = invoices.order_by(sort_by)
+        
         serializer = InvoiceSerializer(invoices, many=True)
         return Response(
             {
