@@ -131,7 +131,6 @@ class InvoiceAPITestCase(APITestCase):
             response = self.client.post(
                 reverse('invoice-create'), 
                 invoice_valid_data, 
-                format='json'
                 )
             
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -144,7 +143,7 @@ class InvoiceAPITestCase(APITestCase):
         response = self.client.post(
             reverse('invoice-create'), 
             {}, 
-            format='json')
+            )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['message'], "failed to create new invoice")
@@ -156,7 +155,6 @@ class InvoiceAPITestCase(APITestCase):
         response = self.client.post(
             reverse('invoice-create'), 
             invoice_valid_data, 
-            format='json'
             )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -169,7 +167,6 @@ class InvoiceAPITestCase(APITestCase):
         response = self.client.post(
             reverse('invoice-create'), 
             invoice_valid_data, 
-            format='json'
             )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -181,7 +178,6 @@ class InvoiceAPITestCase(APITestCase):
             response = self.client.post(
                 reverse('invoice-create'), 
                 invoice_invalid_data, 
-                format='json'
                 )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -213,7 +209,6 @@ class InvoiceAPITestCase(APITestCase):
                             'invoice_id': self.invoice.id
                             }
                         ), invoice_valid_data, 
-                        format='json'
                         )
             
             self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -227,7 +222,6 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_id': self.invoice.id
                         }
                         ), {}, 
-                        format='json'
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -243,7 +237,6 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_id': self.invoice.id
                         }
                         ), invoice_valid_data, 
-                        format='json'
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -259,7 +252,6 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_id': self.invoice.id
                         }
                         ), invoice_valid_data, 
-                        format='json'
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -274,7 +266,6 @@ class InvoiceAPITestCase(APITestCase):
                             'invoice_id': self.invoice.id
                             }
                             ), invoice_invalid_data, 
-                            format='json'
                             )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -290,7 +281,6 @@ class InvoiceAPITestCase(APITestCase):
                             'invoice_id': self.invoice.id
                             }
                             ), invoice_valid_data, 
-                            format='json'
                             )
             
             self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -307,7 +297,6 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_id': self.invoice.id
                         }
                         ), invoice_valid_data, 
-                        format='json'
                         )
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -324,7 +313,6 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_id': self.invoice.id
                         }
                         ), invoice_valid_data, 
-                        format='json'
                         )
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -338,7 +326,6 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_id': self.invoice.id
                         }
                         ), {}, 
-                        format='json'
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -353,7 +340,6 @@ class InvoiceAPITestCase(APITestCase):
                             'invoice_id': self.invoice.id
                             }
                             ), invoice_invalid_data, 
-                            format='json'
                             )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -392,7 +378,6 @@ class InvoiceAPITestCase(APITestCase):
                             'invoice_detail_id': self.invoice_detail.id
                             }
                             ), invoice_detail_valid_data, 
-                            format='json'
                             )
             
             self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -405,7 +390,6 @@ class InvoiceAPITestCase(APITestCase):
                                 'invoice_detail_id': self.invoice_detail.id
                                 }
                                 ), {key: value}, 
-                                format='json'
                                 )
                 
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -418,7 +402,6 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_detail_id': self.invoice_detail.id
                         }
                         ), {}, 
-                        format='json'
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -434,7 +417,6 @@ class InvoiceAPITestCase(APITestCase):
                             'invoice_detail_id': self.invoice_detail.id
                             }
                             ), invoice_detail_invalid_data, 
-                            format='json'
                             )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
