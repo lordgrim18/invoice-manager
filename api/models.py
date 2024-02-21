@@ -4,7 +4,7 @@ import uuid
 class Invoice(models.Model):
     id = models.CharField(primary_key=True, max_length=36, default=uuid.uuid4, editable=False)
     customer_name = models.CharField(max_length=100, blank=False, null=False)
-    invoice_date = models.DateTimeField(auto_now_add=True)
+    invoice_date = models.DateTimeField(blank=False, null=False)
     
     class Meta:
         db_table = 'invoice'
