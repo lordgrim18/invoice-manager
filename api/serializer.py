@@ -50,7 +50,7 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     # id = serializers.CharField(read_only=True)
     invoice_details = InvoiceDetailSerializer(many=True)
-    invoice_date = serializers.DateTimeField()
+    invoice_date = serializers.DateTimeField(required=False)
     
     class Meta:
         model = Invoice
@@ -91,4 +91,9 @@ class InvoiceSerializer(serializers.ModelSerializer):
         if not request.method == 'PATCH':
             if not data.get('invoice_details'):
                 raise serializers.ValidationError("invoice details cannot be empty")
+        else:
+            if not data:
+                raise serializers.ValidationError("request body cannot be empty")
+            if 'invoice_details' in data:
+                raise serializers.ValidationError("invoice details cannot be updated using this endpoint")
         return data

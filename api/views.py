@@ -86,13 +86,6 @@ class InvoiceAPIView(APIView):
                     "data": None
                 }, status=status.HTTP_404_NOT_FOUND)
         invoice = Invoice.objects.get(id=invoice_id)
-        if 'invoice_details' in request.data:
-            return Response(
-                {
-                    "message": "failed to update invoice", 
-                    "errors": "invoice details cannot be updated using this endpoint"
-                }, status=status.HTTP_400_BAD_REQUEST)
-        
         serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             serializer.save()
