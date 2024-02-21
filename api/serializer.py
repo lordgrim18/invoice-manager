@@ -63,6 +63,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         invoice_details_data = validated_data.pop('invoice_details')
+        if not validated_data.get('invoice_date'):
+            validated_data['invoice_date'] = datetime.utcnow()
         invoice = Invoice.objects.create(**validated_data)
         for invoice_detail_data in invoice_details_data:
             InvoiceDetail.objects.create(invoice=invoice, **invoice_detail_data)
