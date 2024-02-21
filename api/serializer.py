@@ -3,6 +3,7 @@ from .models import Invoice, InvoiceDetail
 
 class InvoiceDetailSerializer(serializers.ModelSerializer):
     # id = serializers.CharField(read_only=True)
+    price = serializers.FloatField(required=False)
 
     class Meta:
         model = InvoiceDetail
@@ -13,6 +14,26 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             'unit_price', 
             'price'
             ]
+    
+    def validate(self, data):
+        if not data.get('price'):
+            data['price'] = float(data.get('quantity')) * float(data.get('unit_price'))
+        return data
+
+    def validate_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Price cannot be less than 0")
+        return value
+    
+    def validate_quantity(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Quantity cannot be less than 0")
+        return value
+    
+    def validate_unit_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Unit price cannot be less than 0")
+        return value
         
     def update(self, instance, validated_data):
         instance.description = validated_data.get('description', instance.description)
