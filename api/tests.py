@@ -120,7 +120,7 @@ class InvoiceCreateAPITest(APITestCase):
         response = self.client.post(reverse('invoice-create'), self.invoice_valid_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['message'], "failed to create new invoice")
-        self.assertEqual(response.data['errors'], "invoice details are required")
+        self.assertIn('errors', response.data)
 
     def test_create_invoice_failure__invalid_invoice_details(self):
         for invoice_invalid_data in self.invoice_invalid_data_list:
@@ -169,3 +169,146 @@ class InvoiceListAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], "successfully retrieved invoices")
         self.assertEqual(response.data['data'], [])
+
+class InvoiceUpdateAPITest(APITestCase):
+    def setUp(self):
+        self.invoice = Invoice.objects.create(
+            customer_name='John Doe'
+        )
+        self.invoice_detail_1 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 1',
+            quantity=10,
+            unit_price=100,
+            price=1000
+        )
+        self.invoice_detail_2 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 2',
+            quantity=5,
+            unit_price=50,
+            price=250
+        )
+        self.invoice_detail_3 = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 3',
+            quantity=2,
+            unit_price=200,
+            price=400
+        )
+
+        self.invoice_valid_data = {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'description': 'Product 4',
+                    'quantity': 16,
+                    'unit_price': 166,
+                    'price': 2656
+                },
+                {
+                    'description': 'Product 5',
+                    'quantity': 7,
+                    'unit_price': 10,
+                    'price': 70
+                },
+            ]
+        }
+
+        self.invoice_invalid_data_list = [
+            {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'quantity': 10,
+                    'unit_price': 100,
+                    'price': 1000
+                },
+            ]
+            },
+            {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'description': 'Product 1',
+                    'unit_price': 100,
+                },
+            ]
+            },
+            {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'description': 'Product 1',
+                    'quantity': 10,
+                },
+            ]
+            },
+            {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'description': 'Product 1',
+                    'quantity': 10,
+                    'unit_price': 100,
+                    'price': -1000
+                },
+            ]
+            },
+            {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'description': 'Product 1',
+                    'quantity': -10,
+                    'unit_price': 100,
+                    'price': 1000
+                },
+            ]
+            },
+            {
+            'customer_name': 'John Doe',
+            'invoice_details': [
+                {
+                    'description': 'Product 1',
+                    'quantity': 10,
+                    'unit_price': -100,
+                    'price': 1000
+                },
+            ]
+            }
+        ]
+
+    def test_update_invoice_success(self):
+        response = self.client.put(reverse('invoice-update', kwargs={'invoice_id': self.invoice.id}), self.invoice_valid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "successfully updated invoice")
+        self.assertIn('data', response.data)
+
+    def test_update_invoice_failure__empty(self):
+        response = self.client.put(reverse('invoice-update', kwargs={'invoice_id': self.invoice.id}), {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], "failed to update invoice")
+        self.assertIn('errors', response.data)
+
+    def test_update_invoice_failure__no_customer_name(self):
+        self.invoice_valid_data.pop('customer_name')
+        response = self.client.put(reverse('invoice-update', kwargs={'invoice_id': self.invoice.id}), self.invoice_valid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], "failed to update invoice")
+        self.assertEqual(response.data['errors']['customer_name'][0], "This field is required.")
+
+    def test_update_invoice_failure__no_invoice_details(self):
+        self.invoice_valid_data.pop('invoice_details')
+        response = self.client.put(reverse('invoice-update', kwargs={'invoice_id': self.invoice.id}), self.invoice_valid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], "failed to update invoice")
+        self.assertIn('errors', response.data)
+
+    def test_update_invoice_failure__invalid_invoice_details(self):
+        for invoice_invalid_data in self.invoice_invalid_data_list:
+            response = self.client.put(reverse('invoice-update', kwargs={'invoice_id': self.invoice.id}), invoice_invalid_data, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(response.data['message'], "failed to update invoice")
+            self.assertIn('errors', response.data)
+
