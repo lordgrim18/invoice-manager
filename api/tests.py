@@ -1,7 +1,6 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-from datetime import datetime
 
 from .models import Invoice, InvoiceDetail
 
@@ -132,7 +131,8 @@ class InvoiceCreateAPITest(APITestCase):
 class InvoiceListAPITest(APITestCase):
     def setUp(self):
         self.invoice = Invoice.objects.create(
-            customer_name='John Doe'
+            customer_name='John Doe',
+            invoice_date='2021-01-01T00:00:00Z'
         )
         self.invoice_detail_1 = InvoiceDetail.objects.create(
             invoice=self.invoice,
@@ -173,7 +173,8 @@ class InvoiceListAPITest(APITestCase):
 class InvoiceUpdateAPITest(APITestCase):
     def setUp(self):
         self.invoice = Invoice.objects.create(
-            customer_name='John Doe'
+            customer_name='John Doe',
+            invoice_date='2021-01-01T00:00:00Z'
         )
         self.invoice_detail_1 = InvoiceDetail.objects.create(
             invoice=self.invoice,
@@ -199,6 +200,7 @@ class InvoiceUpdateAPITest(APITestCase):
 
         self.invoice_valid_data = {
             'customer_name': 'John Doe',
+            'invoice_date': '2021-01-01T00:00:00Z', 
             'invoice_details': [
                 {
                     'description': 'Product 4',

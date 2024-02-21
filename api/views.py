@@ -13,6 +13,7 @@ class InvoiceAPIView(APIView):
     - post  : create a new invoice
             : enter the the customer name, invoice date and entire invoice details in the request body
             : note that the entire invoice details must be entered
+            : the invoice date will be automatically set to the current date if not entered in the request body
 
     - get   : retrieve all invoices
             : returns a list of all invoices which includes the customer name, invoice date and entire invoice details
