@@ -19,6 +19,9 @@ class InvoiceAPIView(APIView):
 
     - get   : retrieve all invoices
             : returns a list of all invoices which includes the customer name, invoice date and entire invoice details
+            : the list can be filtered using the search query parameter
+            : the list can be sorted using the sort query parameter
+            : the list is paginated and returns 10 items per page
 
     - put   : update an existing invoice
             : enter the the customer name, invoice date and entire invoice details in the request body
@@ -156,7 +159,6 @@ class InvoiceDetailAPIView(APIView):
     - delete: delete an existing invoice detail
 
     """
-    
     def patch(self, request, invoice_detail_id):
         if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
             return Response(

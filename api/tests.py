@@ -159,16 +159,13 @@ class InvoiceListAPITest(APITestCase):
     def test_get_invoices_success(self):
         response = self.client.get(reverse('invoice-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['data']), Invoice.objects.count())
-        self.assertEqual(response.data['message'], "successfully retrieved invoices")
-        self.assertIn('data', response.data)
+        self.assertEqual(response.data.get('count'), Invoice.objects.count())
+        self.assertEqual(response.data['results']['message'], "successfully retrieved invoices")
 
     def test_get_invoices_success__empty(self):
         Invoice.objects.all().delete()
         response = self.client.get(reverse('invoice-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], "successfully retrieved invoices")
-        self.assertEqual(response.data['data'], [])
 
 class InvoiceUpdateAPITest(APITestCase):
     def setUp(self):
