@@ -33,18 +33,13 @@ class InvoiceAPIView(APIView):
 
     """
     def post(self, request):
-        invoice_details = request.data.pop('invoice_details', [])
+        invoice_details = request.data.get('invoice_details', [])
         if not invoice_details:
             return Response(
                 {
                     "message": "failed to create new invoice", 
                     "errors": "invoice details are required"
                 }, status=status.HTTP_400_BAD_REQUEST)
-        
-        for detail in invoice_details:
-            if 'price' not in detail:
-                detail['price'] = float(float(detail['quantity']) * float(detail['unit_price']))
-        request.data['invoice_details'] = invoice_details
 
         serializer = InvoiceSerializer(data=request.data)
         if serializer.is_valid():
@@ -134,30 +129,6 @@ class InvoiceAPIView(APIView):
             {
                 "message": "successfully deleted invoice", 
                 "data": None
-            }, status=status.HTTP_200_OK)
-    
-class SingleInvoiceAPIView(APIView):
-    """
-    API endpoints that allows a single invoice to be retrieved.
-    The following methods have been implemented:
-
-    - get   : retrieve a single invoice
-            : returns the customer name, invoice date and entire invoice details of the invoice
-
-    """
-    def get(self, request, invoice_id):
-        if not Invoice.objects.filter(id=invoice_id).exists():
-            return Response(
-                {
-                    "message": "invoice not found", 
-                    "data": None
-                }, status=status.HTTP_404_NOT_FOUND)
-        invoice = Invoice.objects.get(id=invoice_id)
-        serializer = InvoiceSerializer(invoice)
-        return Response(
-            {
-                "message": "successfully retrieved invoice", 
-                "data": serializer.data
             }, status=status.HTTP_200_OK)
     
 class InvoiceDetailAPIView(APIView):
