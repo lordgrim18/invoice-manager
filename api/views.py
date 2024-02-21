@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
 from .serializer import InvoiceSerializer, InvoiceDetailSerializer
@@ -73,13 +74,16 @@ class InvoiceAPIView(APIView):
             else:
                 sort_by = sort_by_fields.get(sort_by, '-invoice_date')
             invoices = invoices.order_by(sort_by)
-        
-        serializer = InvoiceSerializer(invoices, many=True)
-        return Response(
-            {
-                "message": "successfully retrieved invoices", 
-                "data": serializer.data
-            }, status=status.HTTP_200_OK)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        paginated_queryset = paginator.paginate_queryset(invoices, request)
+
+        serializer = InvoiceSerializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response({
+            "message": "successfully retrieved invoices",
+            "data": serializer.data
+            })
     
     def put(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
