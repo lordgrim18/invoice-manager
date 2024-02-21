@@ -431,3 +431,68 @@ class InvoiceDeleteAPITest(APITestCase):
         response = self.client.delete(reverse('invoice-delete', kwargs={'invoice_id': 'invalid_id'}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data['message'], "invoice not found")
+
+class InvoiceDetailPartialUpdateAPITest(APITestCase):
+    def setUp(self):
+        self.invoice = Invoice.objects.create(
+            customer_name='John Doe',
+            invoice_date='2021-01-01T00:00:00Z'
+        )
+        self.invoice_detail = InvoiceDetail.objects.create(
+            invoice=self.invoice,
+            description='Product 1',
+            quantity=10,
+            unit_price=100,
+            price=1000
+        )
+
+        self.invoice_detail_valid_data = {
+            'description': 'Product 2',
+            'quantity': 20,
+            'unit_price': 300,
+            'price': 6000
+        }
+
+        self.invoice_detail_invalid_data_list = [
+            {
+            'description': 'Product 1',
+            'quantity': 10,
+            'unit_price': 100,
+            'price': -1000
+            },
+            {
+            'description': 'Product 1',
+            'quantity': -10,
+            'unit_price': 100,
+            'price': 1000
+            },
+            {
+            'description': 'Product 1',
+            'quantity': 10,
+            'unit_price': -100,
+            'price': 1000
+            }
+        ]
+
+    def test_partial_update_invoice_detail_success(self):
+        response = self.client.patch(reverse('invoice-detail-partial-update', kwargs={'invoice_detail_id': self.invoice_detail.id}), self.invoice_detail_valid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "successfully updated invoice detail")
+
+        for key, value in self.invoice_detail_valid_data.items():
+            self.client.patch(reverse('invoice-detail-partial-update', kwargs={'invoice_detail_id': self.invoice_detail.id}), {key: value}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data['message'], "successfully updated invoice detail")
+
+    def test_partial_update_invoice_detail_failure__empty(self):
+        response = self.client.patch(reverse('invoice-detail-partial-update', kwargs={'invoice_detail_id': self.invoice_detail.id}), {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], "failed to update invoice detail")
+        self.assertIn('errors', response.data)
+
+    def test_partial_update_invoice_detail_failure__invalid_invoice_detail(self):
+        for invoice_detail_invalid_data in self.invoice_detail_invalid_data_list:
+            response = self.client.patch(reverse('invoice-detail-partial-update', kwargs={'invoice_detail_id': self.invoice_detail.id}), invoice_detail_invalid_data, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(response.data['message'], "failed to update invoice detail")
+            self.assertIn('errors', response.data)
