@@ -44,4 +44,9 @@ urlpatterns = [
         InvoiceDetailAPIView.as_view(), 
         name='invoice-detail-delete'
         ), #delete
+    path(
+        'invoice-detail/create/<str:invoice_id>/', 
+        InvoiceDetailAPIView.as_view(), 
+        name='invoice-detail-create'
+        ), #post
 ]

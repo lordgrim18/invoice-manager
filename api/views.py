@@ -136,6 +136,10 @@ class InvoiceDetailAPIView(APIView):
 
     - delete : delete an existing invoice detail
 
+    - post   : create a new invoice detail
+             : enter the description, quantity, unit price and price if needed in the request body
+             : note that the invoice id must be entered in the request body
+             : this method is used to add new details to an existing invoice
     """
     def patch(self, request, invoice_detail_id):
         if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
@@ -154,3 +158,18 @@ class InvoiceDetailAPIView(APIView):
         invoice_detail = InvoiceDetail.objects.get(id=invoice_detail_id)
         invoice_detail.delete()
         return CustomResponse("invoice detail", "deletion").success_response()
+    
+    def post(self, request, invoice_id):
+        if not Invoice.objects.filter(id=invoice_id).exists():
+            return CustomResponse(
+                "invoice detail", 
+                "creation"
+                ).not_found_response(
+                    message="invoice object not found - invalid invoice id"
+                )
+        invoice = Invoice.objects.get(id=invoice_id)
+        serializer = InvoiceDetailSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save(invoice=invoice)
+            return CustomResponse("invoice detail", "creation", data=serializer.data).created_response()
+        return CustomResponse("invoice detail", "creation", data=serializer.errors).failure_response()
