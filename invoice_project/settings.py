@@ -89,6 +89,11 @@ MIGRATION_MODULES = {
         app.split('.')[-1]: None for app in INSTALLED_APPS
     }
 
+REST_FRAMEWORK = {
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
