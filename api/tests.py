@@ -21,7 +21,7 @@ class InvoiceAPITestCase(APITestCase):
         self.invoice_valid_data_list = [
             {
                 'customer_name': 'John Doe',
-                'invoice_date': '2024-01-01T00:00:00Z',
+                'invoice_date': '2024-01-01',
                 'invoice_details': [
                     {
                         'description': 'Product 1',
@@ -125,12 +125,12 @@ class InvoiceAPITestCase(APITestCase):
         ]
 
         self.invoice = Invoice.objects.create(
-            customer_name='John Doe',
-            invoice_date='2021-01-01T00:00:00Z'
+            customer_name='New Customer',
+            invoice_date='2000-03-11'
         )
         self.invoice_detail = InvoiceDetail.objects.create(
             invoice=self.invoice,
-            description='Product 1',
+            description='New Product',
             quantity=10,
             unit_price=100,
             price=1000
@@ -312,7 +312,7 @@ class InvoiceAPITestCase(APITestCase):
                             }
                             ), invoice_valid_data, 
                             )
-            
+
             self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_partial_update_invoice_success__name(self):
@@ -404,6 +404,32 @@ class InvoiceAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_single_invoice_success(self):
+        """
+        Test successful retrieval of a single invoice.
+        """
+        response = self.client.get(
+            reverse('single-invoice', 
+                    kwargs={
+                        'invoice_id': self.invoice.id
+                        }
+                        ))
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_single_invoice_failure__invalid_id(self):
+        """
+        Test failed retrieval of a single invoice because of invalid invoice id.
+        """
+        response = self.client.get(
+            reverse('single-invoice', 
+                    kwargs={
+                        'invoice_id': 'invalid_id'
+                        }
+                        ))
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_partial_update_invoice_detail_success(self):
         """
         Test successful partial update of an invoice detail.
@@ -485,5 +511,66 @@ class InvoiceAPITestCase(APITestCase):
                         'invoice_detail_id': 'invalid_id'
                         }
                         ))
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_invoice_detail_success(self):
+        """
+        Test successful creation of an invoice detail.
+        """
+        invoice_valid_data = self.invoice_valid_data_list[0]
+        invoice_detail_valid_data_list = invoice_valid_data.get('invoice_details')
+        for invoice_detail_valid_data in invoice_detail_valid_data_list:
+            response = self.client.post(
+                reverse('invoice-detail-create', 
+                        kwargs={
+                            'invoice_id': self.invoice.id
+                            }
+                            ), invoice_detail_valid_data, 
+                            )
+            
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_invoice_detail_failure__empty(self):
+        """
+        Test failed creation of an invoice detail because of empty data.
+        """
+        response = self.client.post(
+            reverse('invoice-detail-create', 
+                    kwargs={
+                        'invoice_id': self.invoice.id
+                        }
+                        ), {}, 
+                        )
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_invoice_detail_failure__invalid_invoice_detail(self):
+        """
+        Test failed creation of an invoice detail because of invalid data.
+        """
+        for invoice_invalid_data in self.invoice_invalid_data_list:
+            invoice_detail_invalid_data = invoice_invalid_data.get('invoice_details')
+            response = self.client.post(
+                reverse('invoice-detail-create', 
+                        kwargs={
+                            'invoice_id': self.invoice.id
+                            }
+                            ), invoice_detail_invalid_data, 
+                            )
+            
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_invoice_detail_failure__invalid_invoice_id(self):
+        """
+        Test failed creation of an invoice detail because of invalid invoice id.
+        """
+        response = self.client.post(
+            reverse('invoice-detail-create', 
+                    kwargs={
+                        'invoice_id': 'invalid_id'
+                        }
+                        ), {}, 
+                        )
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

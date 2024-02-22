@@ -42,35 +42,39 @@ class CustomResponse:
 
         return Response({
             "error": self.error,
+            "resource": self.resource,
+            "action": self.action,
             "message": self.message,
             "data": self.data,
             "status_code": self.status_code
         }, status=self.status_code)
 
-    def success_response(self):
+    def success_response(self, message: str = None):
         """
         Returns a successful response with a default message based on the action and resource.
+        The message can be overridden with a custom message.
         """
         return self.generate_response(
             error=False, 
-            general_message=f"Successful {self.action} of {self.resource} objects", 
+            general_message=f"Successful {self.action} of {self.resource} objects" if not message else message,
             status_code=status.HTTP_200_OK
             )
 
-    def created_response(self):
+    def created_response(self, message: str = None):
         """
         Returns a created response with a default message indicating successful resource creation.
+        The message can be overridden with a custom message.
         """
         return self.generate_response(
             error=False, 
-            general_message=f"Successful creation of {self.resource} object", 
+            general_message=f"Successful created new object" if not message else message,
             status_code=status.HTTP_201_CREATED
             )
 
-    def failure_response(self, additional_message=None):
+    def failure_response(self, message: str = None):
         """
         Returns a failure response with a default message based on the action and resource,
-        optionally allowing an additional message for specific error scenarios.
+        The message can be overridden with a custom message.
 
         Args:
             additional_message (str, optional): An additional message to include in the response.
@@ -80,16 +84,17 @@ class CustomResponse:
         """
         return self.generate_response(
             error=True, 
-            general_message=f"Failure in {self.action} of {self.resource} object", 
+            general_message=f"Failure in {self.action} of object" if not message else message,
             status_code=status.HTTP_400_BAD_REQUEST
             )
 
-    def not_found_response(self):
+    def not_found_response(self, message: str = None):
         """
         Returns a not found response with a default message indicating the resource was not found.
+        The message can be overridden with a custom message.
         """
         return self.generate_response(
             error=True, 
-            general_message=f"{self.resource} object not found", 
+            general_message=f"{self.resource} object not found" if not message else message, 
             status_code=status.HTTP_404_NOT_FOUND
             )

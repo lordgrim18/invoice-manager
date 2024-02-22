@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import InvoiceAPIView, InvoiceDetailAPIView
+from .views import InvoiceAPIView, InvoiceDetailAPIView, SingleInvoiceAPIView
 
 urlpatterns = [
     path(
@@ -29,6 +29,12 @@ urlpatterns = [
         ), #delete
 
     path(
+        'invoice/get/<str:invoice_id>/',
+        SingleInvoiceAPIView.as_view(),
+        name='single-invoice'
+        ), #get single invoice
+
+    path(
         'invoice-detail/partial-update/<str:invoice_detail_id>/', 
         InvoiceDetailAPIView.as_view(), 
         name='invoice-detail-partial-update'
@@ -38,4 +44,9 @@ urlpatterns = [
         InvoiceDetailAPIView.as_view(), 
         name='invoice-detail-delete'
         ), #delete
+    path(
+        'invoice-detail/create/<str:invoice_id>/', 
+        InvoiceDetailAPIView.as_view(), 
+        name='invoice-detail-create'
+        ), #post
 ]

@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, validators
 from .models import Invoice, InvoiceDetail
 from datetime import datetime
 from django.utils import timezone
@@ -53,11 +53,11 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
                 instance.price = float(instance.quantity) * float(instance.unit_price)
         instance.save()
         return instance
-        
+    
 class InvoiceSerializer(serializers.ModelSerializer):
     # id = serializers.CharField(read_only=True)
     invoice_details = InvoiceDetailSerializer(many=True)
-    invoice_date = serializers.DateTimeField(required=False)
+    invoice_date = serializers.DateField(required=False)
     
     class Meta:
         model = Invoice
@@ -71,7 +71,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         invoice_details_data = validated_data.pop('invoice_details')
         if not validated_data.get('invoice_date'):
-            validated_data['invoice_date'] = timezone.now()
+            validated_data['invoice_date'] = timezone.now().strftime('%Y-%m-%d')
         invoice = Invoice.objects.create(**validated_data)
         for invoice_detail_data in invoice_details_data:
             InvoiceDetail.objects.create(invoice=invoice, **invoice_detail_data)
@@ -79,7 +79,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         instance.customer_name = validated_data.get('customer_name', instance.customer_name)
-        instance.invoice_date = validated_data.get('invoice_date', instance.invoice_date)
+        invoice_date = validated_data.get('invoice_date', instance.invoice_date)
+        instance.invoice_date = invoice_date.strftime('%Y-%m-%d')
         instance.save()
         
         invoice_details_data = validated_data.get('invoice_details', [])
@@ -89,11 +90,6 @@ class InvoiceSerializer(serializers.ModelSerializer):
                 InvoiceDetail.objects.create(invoice=instance, **detail_data)
 
         return instance
-    
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        response['invoice_date'] = instance.invoice_date.strftime('%Y-%m-%d')
-        return response
     
     def validate(self, data):
         request = self.context.get('request')
@@ -105,4 +101,14 @@ class InvoiceSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("request body cannot be empty")
             if 'invoice_details' in data:
                 raise serializers.ValidationError("invoice details cannot be updated using this endpoint")
+            
+        customer_name = data.get('customer_name')
+        invoice_date = data.get('invoice_date', timezone.now().strftime('%Y-%m-%d'))
+        if Invoice.objects.filter(customer_name=customer_name, invoice_date=invoice_date).exists():
+            raise serializers.ValidationError({
+                "duplicate_value_error": "invoice already exists for the customer on the same date",
+                "additional_message": "use the invoice-detail-create endpoint to add more details to the existing invoice",
+                "invoice_id": Invoice.objects.get(customer_name=customer_name, invoice_date=invoice_date).id
+            })
+        
         return data
