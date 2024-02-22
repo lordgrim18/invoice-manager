@@ -39,7 +39,17 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-5. Run the development server.
+5. Initialize the sqlite database
+```bash
+python .\db-scripts\create_tables.py
+```
+Note:
+In case you want some dummy data to fill the database run the following line in the terminal
+```bash
+python .\db-scripts\insert_dummy_data.py
+```
+
+6. Run the development server.
 ```bash
 python manage.py runserver
 ```
