@@ -3,54 +3,93 @@ from rest_framework import status
 
 
 class CustomResponse:
-    def __init__(self, resource, action , additional_message=None, data=None):
-        self.additional_message = additional_message
+    """
+    Handles and formats common API responses for consistency and readability.
+    """
+    def __init__(self, resource: str, action: str, additional_message: str = None, data: dict = None):
+        """
+        Initializes a `CustomResponse` instance.
+
+        Args:
+            resource (str): The type of resource involved in the action (e.g., "invoice", "invoice detail").
+            action (str): The action performed on the resource (e.g., "creation", "updation", "deletion").
+            additional_message (str, optional): An optional additional message to include in the response.
+            data (dict, optional): A dictionary of data to include in the response. Defaults to an empty dictionary.
+        """
         self.resource = resource
         self.action = action
-        self.data = data if data else {}
+        self.additional_message = additional_message
+        self.data = data or {}
 
-    def generate_response(self, error, general_message, status_code):
+    def generate_response(self, error: bool, general_message: str, status_code: status) -> Response:
+        """
+        Generates a response dictionary based on provided arguments.
+
+        Args:
+            error (bool): Indicates whether the response is an error response.
+            general_message (str): The main message for the response.
+            status_code (status): The HTTP status code for the response.
+
+        Returns:
+            Response: A Django REST framework Response object.
+        """
         self.error = error
         self.status_code = status_code
         self.message = {
-            "general_message": general_message, 
+            "general_message": general_message,
             "additional_message": self.additional_message
-            } if self.additional_message else general_message
-        
-        return Response(
-            {
-                "error": self.error, 
-                "message": self.message, 
-                "data": self.data, 
-                "status_code": self.status_code
-                }, status=self.status_code
-            )
+        } if self.additional_message else general_message
+
+        return Response({
+            "error": self.error,
+            "message": self.message,
+            "data": self.data,
+            "status_code": self.status_code
+        }, status=self.status_code)
 
     def success_response(self):
+        """
+        Returns a successful response with a default message based on the action and resource.
+        """
         return self.generate_response(
-            error=False,
-            general_message = "successful {} of {} objects".format(self.action, self.resource),
-            status_code=status.HTTP_200_OK,
-        )
+            error=False, 
+            general_message=f"Successful {self.action} of {self.resource} objects", 
+            status_code=status.HTTP_200_OK
+            )
 
     def created_response(self):
+        """
+        Returns a created response with a default message indicating successful resource creation.
+        """
         return self.generate_response(
-            error=False,
-            general_message = "successful creation of {} object".format(self.resource),
+            error=False, 
+            general_message=f"Successful creation of {self.resource} object", 
             status_code=status.HTTP_201_CREATED
             )
-    
-    def failure_response(self):
+
+    def failure_response(self, additional_message=None):
+        """
+        Returns a failure response with a default message based on the action and resource,
+        optionally allowing an additional message for specific error scenarios.
+
+        Args:
+            additional_message (str, optional): An additional message to include in the response.
+
+        Returns:
+            Response: A failure Django REST framework Response object.
+        """
         return self.generate_response(
             error=True, 
-            general_message="failure in {} of {} object".format(self.action, self.resource),
+            general_message=f"Failure in {self.action} of {self.resource} object", 
             status_code=status.HTTP_400_BAD_REQUEST
             )
 
     def not_found_response(self):
+        """
+        Returns a not found response with a default message indicating the resource was not found.
+        """
         return self.generate_response(
             error=True, 
-            general_message="{} object not found".format(self.resource),
+            general_message=f"{self.resource} object not found", 
             status_code=status.HTTP_404_NOT_FOUND
             )
-

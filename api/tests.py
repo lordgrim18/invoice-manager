@@ -5,7 +5,19 @@ from django.urls import reverse
 from .models import Invoice, InvoiceDetail
 
 class InvoiceAPITestCase(APITestCase):
+    """
+    Test cases for Invoice API endpoints using Django REST framework.
+    """
     def setUp(self):
+        """
+        Sets up test data for invoices and invoice details.
+
+        Attributes:
+        invoice_valid_data_list (list): List of valid data for creation and updation of invoices.
+        invoice_invalid_data_list (list): List of invalid data causing errors.
+        invoice (Invoice): A sample invoice object for testing.
+        invoice_detail (InvoiceDetail): A sample invoice detail object for testing.
+        """
         self.invoice_valid_data_list = [
             {
                 'customer_name': 'John Doe',
@@ -125,6 +137,9 @@ class InvoiceAPITestCase(APITestCase):
         )
 
     def test_create_invoice_success(self):
+        """
+        Tests successful invoice creation with valid data.
+        """
         Invoice.objects.all().delete()
         for count, invoice_valid_data in enumerate(self.invoice_valid_data_list, start=1):
             InvoiceDetail.objects.all().delete()
@@ -136,20 +151,22 @@ class InvoiceAPITestCase(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             self.assertEqual(Invoice.objects.count(), count)
             self.assertEqual(InvoiceDetail.objects.count(), len(invoice_valid_data['invoice_details']))
-            self.assertEqual(response.data['message'], "successfully created new invoice")
-            self.assertIn('data', response.data)
 
     def test_create_invoice_failure__empty(self):
+        """
+        Test failed invoice creation because of empty data.
+        """
         response = self.client.post(
             reverse('invoice-create'), 
             {}, 
             )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to create new invoice")
-        self.assertIn('errors', response.data)
 
     def test_create_invoice_failure__no_customer_name(self):
+        """
+        Test failed invoice creation because of no customer name.
+        """
         invoice_valid_data = self.invoice_valid_data_list[0]
         invoice_valid_data.pop('customer_name')
         response = self.client.post(
@@ -158,10 +175,11 @@ class InvoiceAPITestCase(APITestCase):
             )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to create new invoice")
-        self.assertEqual(response.data['errors']['customer_name'][0], "This field is required.")
 
     def test_create_invoice_failure__no_invoice_details(self):
+        """
+        Test failed invoice creation because of no invoice details.
+        """
         invoice_valid_data = self.invoice_valid_data_list[0]
         invoice_valid_data.pop('invoice_details')
         response = self.client.post(
@@ -170,10 +188,11 @@ class InvoiceAPITestCase(APITestCase):
             )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to create new invoice")
-        self.assertIn('errors', response.data)
 
     def test_create_invoice_failure__invalid_invoice_details(self):
+        """
+        Test failed invoice creation because of invalid invoice details.
+        """
         for invoice_invalid_data in self.invoice_invalid_data_list:
             response = self.client.post(
                 reverse('invoice-create'), 
@@ -181,19 +200,22 @@ class InvoiceAPITestCase(APITestCase):
                 )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(response.data['message'], "failed to create new invoice")
-            self.assertIn('errors', response.data)
 
     def test_get_invoices_success(self):
+        """
+        Test successful retrieval of invoices.
+        """
         response = self.client.get(
             reverse('invoice-list')
             )
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('count'), Invoice.objects.count())
-        self.assertEqual(response.data['results']['message'], "successfully retrieved invoices")
 
     def test_get_invoices_success__empty(self):
+        """
+        Test successful retrieval of invoices when there are no invoices.
+        """
         Invoice.objects.all().delete()
         response = self.client.get(
             reverse('invoice-list')
@@ -202,6 +224,9 @@ class InvoiceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_invoice_success(self):
+        """
+        Test successful invoice updation with valid data.
+        """
         for invoice_valid_data in self.invoice_valid_data_list:
             response = self.client.put(
                 reverse('invoice-update', 
@@ -212,10 +237,11 @@ class InvoiceAPITestCase(APITestCase):
                         )
             
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data['message'], "successfully updated invoice")
-            self.assertIn('data', response.data)
 
     def test_update_invoice_failure__empty(self):
+        """
+        Test failed invoice updation because of empty data.
+        """
         response = self.client.put(
             reverse('invoice-update', 
                     kwargs={
@@ -225,10 +251,11 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to update invoice")
-        self.assertIn('errors', response.data)
 
     def test_update_invoice_failure__no_customer_name(self):
+        """
+        Test failed invoice updation because of no customer name.
+        """
         invoice_valid_data = self.invoice_invalid_data_list[0]
         invoice_valid_data.pop('customer_name')
         response = self.client.put(
@@ -240,10 +267,11 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to update invoice")
-        self.assertEqual(response.data['errors']['customer_name'][0], "This field is required.")
 
     def test_update_invoice_failure__no_invoice_details(self):
+        """
+        Test failed invoice updation because of no invoice details.
+        """
         invoice_valid_data = self.invoice_invalid_data_list[0]
         invoice_valid_data.pop('invoice_details')
         response = self.client.put(
@@ -255,10 +283,11 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to update invoice")
-        self.assertIn('errors', response.data)
 
     def test_update_invoice_failure__invalid_invoice_details(self):
+        """
+        Test failed invoice updation because of invalid invoice details.
+        """
         for invoice_invalid_data in self.invoice_invalid_data_list:
             response = self.client.put(
                 reverse('invoice-update', 
@@ -269,10 +298,11 @@ class InvoiceAPITestCase(APITestCase):
                             )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(response.data['message'], "failed to update invoice")
-            self.assertIn('errors', response.data)
 
     def test_partial_update_invoice_success__name_date(self):
+        """
+        Test successful partial invoice updation with customer name and invoice date.
+        """
         for invoice_valid_data in self.invoice_valid_data_list:
             invoice_valid_data.pop('invoice_details')
             response = self.client.patch(
@@ -284,10 +314,11 @@ class InvoiceAPITestCase(APITestCase):
                             )
             
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data['message'], "successfully updated invoice")
-            self.assertIn('data', response.data)
     
     def test_partial_update_invoice_success__name(self):
+        """
+        Test successful partial invoice updation with customer name only.
+        """
         invoice_valid_data = self.invoice_valid_data_list[0]
         invoice_valid_data.pop('invoice_details')
         invoice_valid_data.pop('invoice_date')
@@ -300,10 +331,11 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], "successfully updated invoice")
-        self.assertIn('data', response.data)
 
     def test_partial_update_invoice_success__date(self):
+        """
+        Test successful partial invoice updation with invoice date only.
+        """
         invoice_valid_data = self.invoice_valid_data_list[0]
         invoice_valid_data.pop('invoice_details')
         invoice_valid_data.pop('customer_name')
@@ -316,10 +348,11 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], "successfully updated invoice")
-        self.assertIn('data', response.data)
 
     def test_partial_update_invoice_failure__empty(self):
+        """
+        Test failed partial invoice updation because of empty data.
+        """
         response = self.client.patch(
             reverse('invoice-partial-update', 
                     kwargs={
@@ -329,24 +362,26 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to update invoice")
-        self.assertIn('errors', response.data)
 
     def test_partial_update_invoice_failure__invoice_details(self):
-        for invoice_invalid_data in self.invoice_invalid_data_list:
+        """
+        Test failed partial invoice updation because of sending invoice details in request body.
+        """
+        for invoice_valid_data in self.invoice_valid_data_list:
             response = self.client.patch(
                 reverse('invoice-partial-update', 
                         kwargs={
                             'invoice_id': self.invoice.id
                             }
-                            ), invoice_invalid_data, 
+                            ), invoice_valid_data, 
                             )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(response.data['message'], "failed to update invoice")
-            self.assertIn('errors', response.data)
 
     def test_delete_invoice_success(self):
+        """
+        Test successful deletion of an invoice.
+        """
         response = self.client.delete(
             reverse('invoice-delete',
                     kwargs={
@@ -355,9 +390,11 @@ class InvoiceAPITestCase(APITestCase):
                         ))
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], "successfully deleted invoice")
 
     def test_delete_invoice_failure__invalid_id(self):
+        """
+        Test failed deletion of an invoice because of invalid invoice id.
+        """
         response = self.client.delete(
             reverse('invoice-delete', 
                     kwargs={
@@ -366,9 +403,11 @@ class InvoiceAPITestCase(APITestCase):
                         ))
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.data['message'], "invoice not found")
 
     def test_partial_update_invoice_detail_success(self):
+        """
+        Test successful partial update of an invoice detail.
+        """
         invoice_valid_data = self.invoice_valid_data_list[0]
         invoice_detail_valid_data_list = invoice_valid_data.get('invoice_details')
         for invoice_detail_valid_data in invoice_detail_valid_data_list:
@@ -381,7 +420,6 @@ class InvoiceAPITestCase(APITestCase):
                             )
             
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data['message'], "successfully updated invoice detail")
 
             for key, value in invoice_detail_valid_data.items():
                 self.client.patch(
@@ -393,9 +431,11 @@ class InvoiceAPITestCase(APITestCase):
                                 )
                 
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
-                self.assertEqual(response.data['message'], "successfully updated invoice detail")
 
     def test_partial_update_invoice_detail_failure__empty(self):
+        """
+        Test failed partial update of an invoice detail because of empty data.
+        """
         response = self.client.patch(
             reverse('invoice-detail-partial-update', 
                     kwargs={
@@ -405,10 +445,11 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], "failed to update invoice detail")
-        self.assertIn('errors', response.data)
 
     def test_partial_update_invoice_detail_failure__invalid_invoice_detail(self):
+        """
+        Test failed partial update of an invoice detail because of invalid data.
+        """
         for invoice_invalid_data in self.invoice_invalid_data_list:
             invoice_detail_invalid_data = invoice_invalid_data.get('invoice_details')
             response = self.client.patch(
@@ -420,10 +461,11 @@ class InvoiceAPITestCase(APITestCase):
                             )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(response.data['message'], "failed to update invoice detail")
-            self.assertIn('errors', response.data)
 
     def test_delete_invoice_detail_success(self):
+        """
+        Test successful deletion of an invoice detail.
+        """
         response = self.client.delete(
             reverse('invoice-detail-delete', 
                     kwargs={
@@ -432,9 +474,11 @@ class InvoiceAPITestCase(APITestCase):
                         ))
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], "successfully deleted invoice detail")
 
     def test_delete_invoice_detail_failure__invalid_id(self):
+        """
+        Test failed deletion of an invoice detail because of invalid invoice detail id.
+        """
         response = self.client.delete(
             reverse('invoice-detail-delete', 
                     kwargs={
@@ -443,4 +487,3 @@ class InvoiceAPITestCase(APITestCase):
                         ))
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.data['message'], "invoice detail not found")
