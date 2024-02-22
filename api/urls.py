@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import InvoiceAPIView, InvoiceDetailAPIView
+from .views import InvoiceAPIView, InvoiceDetailAPIView, SingleInvoiceAPIView
 
 urlpatterns = [
     path(
@@ -27,6 +27,12 @@ urlpatterns = [
         InvoiceAPIView.as_view(),
         name='invoice-delete'
         ), #delete
+
+    path(
+        'invoice/get/<str:invoice_id>/',
+        SingleInvoiceAPIView.as_view(),
+        name='single-invoice'
+        ), #get single invoice
 
     path(
         'invoice-detail/partial-update/<str:invoice_detail_id>/', 
