@@ -31,7 +31,7 @@ class InvoiceAPIView(APIView):
             : this means that the invoice date will not be updated if it is not entered in the request body
 
     - patch : update an existing invoice
-            : enter the the customer name or invoice date in the request body
+            : enter the the customer name or invoice date or both in the request body
             : note that the previous entire invoice details will be retained and cannot be updated using this endpoint
             : remember that invoice date has to be manually updated if needed and doesn't happen automatically
             : this means that the invoice date will not be updated if it is not entered in the request body
@@ -131,8 +131,8 @@ class InvoiceDetailAPIView(APIView):
     The following methods have been implemented:
 
     - patch  : update any aspect existing invoice detail
-             : enter any of the description, quantity, unit price or price in the request body
-             : to completely update an invoice detail, use the invoice endpoint
+             : enter any of the description, quantity, unit price or price or all of them in the request body
+             : to completely update an invoice and detail, use the invoice-update endpoint
 
     - delete : delete an existing invoice detail
 

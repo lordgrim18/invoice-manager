@@ -11,6 +11,8 @@ The API provides endpoints to manage invoices and their details. It allows for c
 - Update and delete invoice details.
 - Custom Response format for better error handling.
 - Comprehensive test suite using rest_framework.test.APITestCase to ensure code quality and functionality.
+- Pagination for listing invoices.
+- Search and sort functionality for listing invoices.
 
 ### Getting Started
 
@@ -76,5 +78,7 @@ The API provides the following endpoints:
 - **Update Invoice**: `PUT /invoice/update/<invoice_id>/`
 - **Partial Update Invoice**: `PATCH /invoice/partial-update/<invoice_id>/`
 - **Delete Invoice**: `DELETE /invoice/delete/<invoice_id>/`
+- **View Single Invoice**: `GET /invoice/get/<invoice_id>/`
 - **Partial Update Invoice Detail**: `PATCH /invoice-detail/partial-update/<invoice_detail_id>/`
 - **Delete Invoice Detail**: `DELETE /invoice-detail/delete/<invoice_detail_id>/`
+- **Create Invoice Detail**: `POST /invoice-detail/create/<invoice_id>/`
