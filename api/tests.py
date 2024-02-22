@@ -21,7 +21,7 @@ class InvoiceAPITestCase(APITestCase):
         self.invoice_valid_data_list = [
             {
                 'customer_name': 'John Doe',
-                'invoice_date': '2024-01-01T00:00:00Z',
+                'invoice_date': '2024-01-01',
                 'invoice_details': [
                     {
                         'description': 'Product 1',
@@ -125,12 +125,12 @@ class InvoiceAPITestCase(APITestCase):
         ]
 
         self.invoice = Invoice.objects.create(
-            customer_name='John Doe',
-            invoice_date='2021-01-01T00:00:00Z'
+            customer_name='New Customer',
+            invoice_date='2000-03-11'
         )
         self.invoice_detail = InvoiceDetail.objects.create(
             invoice=self.invoice,
-            description='Product 1',
+            description='New Product',
             quantity=10,
             unit_price=100,
             price=1000
@@ -312,7 +312,7 @@ class InvoiceAPITestCase(APITestCase):
                             }
                             ), invoice_valid_data, 
                             )
-            
+
             self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_partial_update_invoice_success__name(self):
