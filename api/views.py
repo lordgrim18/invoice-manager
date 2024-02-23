@@ -10,7 +10,7 @@ from .utils import CustomResponse
 
 class InvoiceAPIView(APIView):
     """
-    API endpoints that allows invoices to be created, retrieved, updated and deleted.
+    API endpoint that allows invoices to be created and retrieved.
     The following methods have been implemented:
 
     - post  : create a new invoice
@@ -19,10 +19,9 @@ class InvoiceAPIView(APIView):
             : the invoice date will be automatically set to the current date if not entered in the request body
 
     - get   : retrieve all invoices
-            : returns a list of all invoices which includes the customer name, invoice date and entire invoice details
-            : the list can be filtered using the search query parameter
-            : search can be done using the customer name or any of the invoice detail description 
-            : the list can be sorted using the sort query parameter
+            : returns a list of all invoices which contains the customer name, invoice date and entire invoice details
+            : the list can be filtered using the search and sort query parameters
+            : search can be done using the customer name or invoice detail description 
             : sort can be done using the customer name, invoice date, description, price, quantity or unit price
             : the list is paginated and returns 10 items per page
 
@@ -69,30 +68,62 @@ class InvoiceAPIView(APIView):
             "data": serializer.data
             })
 
+class InvoiceListMinimalAPIView(APIView):
+    """
+    API endpoints that allows all the invoices to be retrieved, but in a minimal format.
+    The following method has been implemented:
+
+    - get : retrieve all invoices
+          : returns a list of all invoices containing only the invoice id, customer name and invoice date
+          : search and sort can be done using the customer name or invoice date
+          : is useful while viewing single invoice or updating or deleting an invoice
+    """
+    def get(self, request):
+        invoices = Invoice.objects.all()
+        search_query = request.query_params.get('search', None)
+        if search_query:
+            invoices = invoices.filter(
+                Q(customer_name__icontains=search_query) | 
+                Q(invoice_date__icontains=search_query)
+                   ).distinct()
+            
+        sort_by_fields = {
+            "customer": "customer_name",
+            "date": "invoice_date"
+        }
+        sort_by = request.query_params.get('sort')
+        if sort_by:
+            if sort_by.startswith("-"):
+                sort_by = f"-{sort_by_fields.get(sort_by[1:], 'invoice_date')}"
+            else:
+                sort_by = sort_by_fields.get(sort_by, '-invoice_date')
+            invoices = invoices.order_by(sort_by)
+        
+        serializer = MinimalInvoiceSerializer(invoices, many=True)
+        return CustomResponse("invoice", "minimal-retrieval", data=serializer.data).success_response()
+
 class SingleInvoiceAPIView(APIView):
     """
     API endpoints that allows a single invoice to be retrieved.
     The following method has been implemented:
 
-    - get : retrieve a single invoice
-          : returns a single invoice which includes the customer name, invoice date and entire invoice details
-          : this method is used to retrieve a single invoice using the invoice id
+    - get : returns a single invoice containing the customer name, invoice date and entire invoice details by using the invoice id
           : is useful for retrieving a single invoice for viewing or updating
     
-    - put   : update an existing invoice
-            : enter the the customer name, invoice date and entire invoice details in the request body
-            : note that the entire previous invoice details will be replaced with the new details
-            : remember that invoice date has to be manually updated if required and doesn't happen automatically
-            : this means that the invoice date will not be updated if it is not entered in the request body
+    - put    : update an existing invoice
+             : enter the the customer name, invoice date and entire invoice details in the request body
+             : note that the entire previous invoice details will be replaced with the new details
+             : remember that invoice date has to be manually updated if required and doesn't happen automatically
+             : this means that the invoice date will not be updated if it is not entered in the request body
 
-    - patch : update an existing invoice
-            : enter the the customer name or invoice date or both in the request body
-            : note that the previous entire invoice details will be retained and cannot be updated using this endpoint
-            : remember that invoice date has to be manually updated if needed and doesn't happen automatically
-            : this means that the invoice date will not be updated if it is not entered in the request body
+    - patch  : update an existing invoice
+             : enter the the customer name or invoice date or both in the request body
+             : note that the previous entire invoice details will be retained and cannot be updated using this endpoint
+             : remember that invoice date has to be manually updated if needed and doesn't happen automatically
+             : this means that the invoice date will not be updated if it is not entered in the request body
 
-    - delete: delete an existing invoice
-    
+    - delete : delete an existing invoice
+
     """
     def get(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
@@ -127,51 +158,13 @@ class SingleInvoiceAPIView(APIView):
         invoice = Invoice.objects.get(id=invoice_id)
         invoice.delete()
         return CustomResponse("invoice", "deletion").success_response()
-    
-class InvoiceListMinimalAPIView(APIView):
-    """
-    API endpoints that allows all the invoices to be retrieved.
-    But only the invoice id, customer name and invoice date are returned.
-    Search and sort query parameters can be used to filter the list of invoices.
-    The following method has been implemented:
-
-    - get : retrieve all invoices
-          : returns a list of all invoices which includes the invoice id, customer name and invoice date
-          : search and sort can be done using the customer name or invoice date
-
-          : this method is used to retrieve all invoices with minimal details
-          : is useful for retrieving viewing single invoice or updating or deleting an invoice
-    """
-    def get(self, request):
-        invoices = Invoice.objects.all()
-        search_query = request.query_params.get('search', None)
-        if search_query:
-            invoices = invoices.filter(
-                Q(customer_name__icontains=search_query) | 
-                Q(invoice_date__icontains=search_query)
-                   ).distinct()
-            
-        sort_by_fields = {
-            "customer": "customer_name",
-            "date": "invoice_date"
-        }
-        sort_by = request.query_params.get('sort')
-        if sort_by:
-            if sort_by.startswith("-"):
-                sort_by = f"-{sort_by_fields.get(sort_by[1:], 'invoice_date')}"
-            else:
-                sort_by = sort_by_fields.get(sort_by, '-invoice_date')
-            invoices = invoices.order_by(sort_by)
-        
-        serializer = MinimalInvoiceSerializer(invoices, many=True)
-        return CustomResponse("invoice", "minimal-retrieval", data=serializer.data).success_response()
 
 class InvoiceDetailAPIView(APIView):
     """
     API endpoints that allows invoice details to be retrieved and deleted.
     The following methods have been implemented:
 
-    - patch  : update any aspect existing invoice detail
+    - patch  : update any aspect of an existing invoice detail
              : enter any of the description, quantity, unit price or price or all of them in the request body
              : to completely update an invoice and detail, use the invoice-update endpoint
 
@@ -181,6 +174,7 @@ class InvoiceDetailAPIView(APIView):
              : enter the description, quantity, unit price and price if needed in the request body
              : note that the invoice id must be entered in the request body
              : this method is used to add new details to an existing invoice
+             
     """
     def patch(self, request, invoice_detail_id):
         if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
