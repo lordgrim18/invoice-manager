@@ -41,7 +41,24 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-5. Initialize the sqlite database
+5. Create a `.env` file in the root of the project to add the environment variables for the project. 
+The environment variables that are needed are given in the `.env.sample` file. 
+```bash
+SECRET_KEY=your_secret_key
+DEBUG=True
+ALLOWED_HOSTS=*
+```
+
+- Here, secret key is the Django secret key for the project. You can generate a new secret key using the following command in your terminal.
+```bash
+python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+```
+
+- The `DEBUG` variable is used to enable or disable the debug mode for the project. This allows for better error handling and debugging. `DEBUG` should be set to `True` for development and `False` for production.
+- The `ALLOWED_HOSTS` variable is used to specify the hosts that are allowed to make requests to the project. This can be set to `*` to allow all hosts. 
+
+
+6. Initialize the sqlite database
 ```bash
 python .\db-scripts\create_tables.py
 ```
@@ -51,14 +68,14 @@ In case you want some dummy data to fill the database run the following line in 
 python .\db-scripts\insert_dummy_data.py
 ```
 
-6. Run the development server.
+7. Run the development server.
 ```bash
 python manage.py runserver
 ```
 
 warning : ensure that you do not make migrations to the database, as we have disabled admin and similar features.
 
-6. The API will be available at `http://localhost:8000/`.
+8. The API will be available at `http://localhost:8000/`.
 
 ### Testing
 
