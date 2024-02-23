@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
-from .serializer import InvoiceSerializer, InvoiceDetailSerializer
+from .serializer import InvoiceSerializer, InvoiceDetailSerializer, MinimalInvoiceSerializer
 from .models import Invoice, InvoiceDetail
 from .utils import CustomResponse
 
@@ -21,7 +21,9 @@ class InvoiceAPIView(APIView):
     - get   : retrieve all invoices
             : returns a list of all invoices which includes the customer name, invoice date and entire invoice details
             : the list can be filtered using the search query parameter
+            : search can be done using the customer name or any of the invoice detail description 
             : the list can be sorted using the sort query parameter
+            : sort can be done using the customer name, invoice date, description, price, quantity or unit price
             : the list is paginated and returns 10 items per page
 
     - put   : update an existing invoice
@@ -107,7 +109,7 @@ class InvoiceAPIView(APIView):
         invoice = Invoice.objects.get(id=invoice_id)
         invoice.delete()
         return CustomResponse("invoice", "deletion").success_response()
-    
+
 class SingleInvoiceAPIView(APIView):
     """
     API endpoints that allows a single invoice to be retrieved.
@@ -125,6 +127,44 @@ class SingleInvoiceAPIView(APIView):
         serializer = InvoiceSerializer(invoice)
         return CustomResponse("invoice", "retrieval", data=serializer.data).success_response()
     
+class InvoiceListMinimalAPIView(APIView):
+    """
+    API endpoints that allows all the invoices to be retrieved.
+    But only the invoice id, customer name and invoice date are returned.
+    Search and sort query parameters can be used to filter the list of invoices.
+    The following method has been implemented:
+
+    - get : retrieve all invoices
+          : returns a list of all invoices which includes the invoice id, customer name and invoice date
+          : search and sort can be done using the customer name or invoice date
+
+          : this method is used to retrieve all invoices with minimal details
+          : is useful for retrieving viewing single invoice or updating or deleting an invoice
+    """
+    def get(self, request):
+        invoices = Invoice.objects.all()
+        search_query = request.query_params.get('search', None)
+        if search_query:
+            invoices = invoices.filter(
+                Q(customer_name__icontains=search_query) | 
+                Q(invoice_date__icontains=search_query)
+                   ).distinct()
+            
+        sort_by_fields = {
+            "customer": "customer_name",
+            "date": "invoice_date"
+        }
+        sort_by = request.query_params.get('sort')
+        if sort_by:
+            if sort_by.startswith("-"):
+                sort_by = f"-{sort_by_fields.get(sort_by[1:], 'invoice_date')}"
+            else:
+                sort_by = sort_by_fields.get(sort_by, '-invoice_date')
+            invoices = invoices.order_by(sort_by)
+        
+        serializer = MinimalInvoiceSerializer(invoices, many=True)
+        return CustomResponse("invoice", "minimal-retrieval", data=serializer.data).success_response()
+
 class InvoiceDetailAPIView(APIView):
     """
     API endpoints that allows invoice details to be retrieved and deleted.

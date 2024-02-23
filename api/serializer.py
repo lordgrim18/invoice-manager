@@ -112,3 +112,12 @@ class InvoiceSerializer(serializers.ModelSerializer):
             })
         
         return data
+    
+class MinimalInvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = [
+            'id',
+            'customer_name', 
+            'invoice_date'
+            ]
