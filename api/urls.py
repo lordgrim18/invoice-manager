@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import InvoiceAPIView, InvoiceDetailAPIView, SingleInvoiceAPIView
+from .views import InvoiceAPIView, InvoiceDetailAPIView, SingleInvoiceAPIView, InvoiceListMinimalAPIView
 
 urlpatterns = [
     path(
@@ -27,6 +27,12 @@ urlpatterns = [
         InvoiceAPIView.as_view(),
         name='invoice-delete'
         ), #delete
+
+    path(
+        'invoice/get/minimal/',
+        InvoiceListMinimalAPIView.as_view(),
+        name='invoice-list-minimal'
+        ), #get minimal list
 
     path(
         'invoice/get/<str:invoice_id>/',
