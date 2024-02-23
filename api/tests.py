@@ -404,6 +404,31 @@ class InvoiceAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_invoices_minimal_success(self):
+        """
+        Test successful retrieval of minimal invoices.
+        """
+        response = self.client.get(
+            reverse('invoice-list-minimal')
+            )
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("data")), Invoice.objects.count())
+        for invoice in response.data.get("data"):
+            self.assertEqual(invoice.keys(), {'id', 'customer_name', 'invoice_date'})
+
+    def test_get_invoices_minimal_success__empty(self):
+        """
+        Test successful retrieval of minimal invoices when there are no invoices.
+        """
+        Invoice.objects.all().delete()
+        response = self.client.get(
+            reverse('invoice-list-minimal')
+            )
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("data"), {})
+
     def test_get_single_invoice_success(self):
         """
         Test successful retrieval of a single invoice.
