@@ -13,25 +13,25 @@ def insert_dummy_data(db_path):
 
     # Dummy invoice data
     invoice_data = [
-        ('4ce18afe-f33a-4bee-a14c-49180a83e1d7', 'John 117', '2024-02-22'),
-        ('1668b372-32d2-4867-a2ef-7b79558f37e1', 'Jerome 092', '0537-01-01'),
-        ('408630b3-220f-499e-b093-bf7ab21a37b1', 'Cortana', '0552-07-21'),
-        ('63faff60-20f4-49f4-be88-ee7f5540e60a', 'Arbiter', '2024-02-22'),
-        ('e8bb5064-9879-4949-a6a0-76baf70d6ac3', 'Sergeant Avery Johnson', '2024-02-22'),
-        ('86ff4f2c-0130-4f6b-8cd5-68725c5898f1', 'Commander Miranda Keyes', '2024-02-22'),
-        ('dfa9c705-809d-46a3-b2a8-1b7775d5ee5b', 'Gravemind', '2024-02-22'),
-        ('06fb9061-cf44-4df5-9d67-3130652f9b9c', 'Fred-104', '2024-02-22'),
-        ('b885b6f0-710c-497b-be27-92fb9fa0ad91', 'Prophet of Regret', '2024-02-22'),
-        ('80e9923b-e8f7-41d0-884d-971598e24ca4', 'Flood', '2024-02-22'),
-        ('29fd0057-57d4-476c-b293-7209db01fde4', 'Dr. Catherine Halsey', '2024-02-22'),
+        ('4ce18afe-f33a-4bee-a14c-49180a83e1d7', 'John 117', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('1668b372-32d2-4867-a2ef-7b79558f37e1', 'Jerome 092', '0537-01-01', '2024-02-22 00:56:03.172402', '2024-02-22 00:56:03.172402'),
+        ('408630b3-220f-499e-b093-bf7ab21a37b1', 'Cortana', '0552-07-21', '2024-02-22 00:57:50.586866', '2024-02-22 00:57:50.586866'),
+        ('63faff60-20f4-49f4-be88-ee7f5540e60a', 'Arbiter', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('e8bb5064-9879-4949-a6a0-76baf70d6ac3', 'Sergeant Avery Johnson', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('86ff4f2c-0130-4f6b-8cd5-68725c5898f1', 'Commander Miranda Keyes', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('dfa9c705-809d-46a3-b2a8-1b7775d5ee5b', 'Gravemind', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('06fb9061-cf44-4df5-9d67-3130652f9b9c', 'Fred-104', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('b885b6f0-710c-497b-be27-92fb9fa0ad91', 'Prophet of Regret', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('80e9923b-e8f7-41d0-884d-971598e24ca4', 'Flood', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
+        ('29fd0057-57d4-476c-b293-7209db01fde4', 'Dr. Catherine Halsey', '2024-02-22', '2024-02-22 00:54:20.602715', '2024-02-22 00:54:20.602715'),
     ]
 
     # Insert invoice data
-    for invoice_id, customer_name, invoice_date in invoice_data:
+    for invoice_id, customer_name, invoice_date, created_at, updated_at in invoice_data:
         c.execute("""
-            INSERT INTO invoice (id, customer_name, invoice_date)
-            VALUES (?, ?, ?)
-        """, (invoice_id, customer_name, invoice_date))
+            INSERT INTO invoice (id, customer_name, invoice_date, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (invoice_id, customer_name, invoice_date, created_at, updated_at))
 
     # Dummy invoice detail data
     invoice_detail_data = [

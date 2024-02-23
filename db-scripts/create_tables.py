@@ -16,7 +16,9 @@ def create_tables(db_path):
         CREATE TABLE IF NOT EXISTS invoice (
             id TEXT PRIMARY KEY UNIQUE,
             customer_name TEXT NOT NULL,
-            invoice_date DATE NOT NULL
+            invoice_date DATE NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
