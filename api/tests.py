@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from .models import Invoice, InvoiceDetail
 
-class InvoiceAPITestCase(APITestCase):
+class InvoiceAPITest(APITestCase):
     """
     Test cases for Invoice API endpoints using Django REST framework.
     """
@@ -136,11 +136,19 @@ class InvoiceAPITestCase(APITestCase):
             price=1000
         )
 
+class CreateInvoiceTests(InvoiceAPITest):
+    """
+    Test cases for creating invoices.
+    """
+    def setUp(self):
+        super().setUp()
+        Invoice.objects.all().delete()
+
     def test_create_invoice_success(self):
         """
         Tests successful invoice creation with valid data.
         """
-        Invoice.objects.all().delete()
+        # Invoice.objects.all().delete()
         for count, invoice_valid_data in enumerate(self.invoice_valid_data_list, start=1):
             InvoiceDetail.objects.all().delete()
             response = self.client.post(
@@ -201,6 +209,11 @@ class InvoiceAPITestCase(APITestCase):
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+class InvoiceListAPITests(InvoiceAPITest):
+    """
+    Test cases for Invoice API endpoints using Django REST framework.
+    """
+
     def test_get_invoices_success(self):
         """
         Test successful retrieval of invoices.
@@ -223,6 +236,10 @@ class InvoiceAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+class InvoiceUpdateTests(InvoiceAPITest):
+    """
+    Test cases for updating invoices using Django REST framework.
+    """
     def test_update_invoice_success(self):
         """
         Test successful invoice updation with valid data.
@@ -298,6 +315,11 @@ class InvoiceAPITestCase(APITestCase):
                             )
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class InvoicePartialUpdateTests(InvoiceAPITest):
+    """
+    Test cases for partial update of invoices using Django REST framework.
+    """
 
     def test_partial_update_invoice_success__name_date(self):
         """
@@ -378,6 +400,11 @@ class InvoiceAPITestCase(APITestCase):
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+class InvoiceDeleteTests(InvoiceAPITest):
+    """
+    Test cases for deletion of invoices using Django REST framework.
+    """
+
     def test_delete_invoice_success(self):
         """
         Test successful deletion of an invoice.
@@ -404,6 +431,11 @@ class InvoiceAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+class InvoiceListMinimalAPITests(InvoiceAPITest):
+    """
+    Test cases for minimal invoice list API endpoints using Django REST framework.
+    """
+
     def test_get_invoices_minimal_success(self):
         """
         Test successful retrieval of minimal invoices.
@@ -428,6 +460,11 @@ class InvoiceAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("data"), {})
+
+class SingleInvoiceAPITests(InvoiceAPITest):
+    """
+    Test cases for single invoice API endpoints using Django REST framework.
+    """
 
     def test_get_single_invoice_success(self):
         """
@@ -454,6 +491,11 @@ class InvoiceAPITestCase(APITestCase):
                         ))
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class InvoiceDetailPartialUpdateTests(InvoiceAPITest):
+    """
+    Test cases for partial update of invoice details using Django REST framework.
+    """
 
     def test_partial_update_invoice_detail_success(self):
         """
@@ -513,6 +555,11 @@ class InvoiceAPITestCase(APITestCase):
             
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+class InvoiceDetailDeleteTests(InvoiceAPITest):
+    """
+    Test cases for deletion of invoice details using Django REST framework.
+    """
+
     def test_delete_invoice_detail_success(self):
         """
         Test successful deletion of an invoice detail.
@@ -538,6 +585,11 @@ class InvoiceAPITestCase(APITestCase):
                         ))
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class InvoiceDetailCreateTests(InvoiceAPITest):
+    """
+    Test cases for creation of invoice details using Django REST framework.
+    """
 
     def test_create_invoice_detail_success(self):
         """
@@ -601,26 +653,29 @@ class InvoiceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 class InvoicePaginationTests(APITestCase):
+    """
+    Test cases for pagination of invoices.
+    """
     
-        def setUp(self):
-            Invoice.objects.bulk_create(
-                [Invoice(customer_name=f"Customer {i}", invoice_date=f"2023-02-{23-i}") for i in range(1, 16)]
-            )
-    
-        def test_pagination(self):
-            response = self.client.get(reverse('invoice-list'))
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(response.data["results"]["data"]), 10)
-            self.assertIn(reverse('invoice-list') + "?page=2", response.data["next"])
-            self.assertEqual(response.data["previous"], None)
-    
-            response = self.client.get(reverse('invoice-list') + "?page=2")
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(response.data["results"]["data"]), 5)
-            self.assertEqual(response.data["next"], None)
-            self.assertIn(reverse('invoice-list'), response.data["previous"])
+    def setUp(self):
+        Invoice.objects.bulk_create(
+            [Invoice(customer_name=f"Customer {i}", invoice_date=f"2023-02-{23-i}") for i in range(1, 16)]
+        )
 
-            self.assertEqual(response.data["count"], 15)
+    def test_pagination(self):
+        response = self.client.get(reverse('invoice-list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["results"]["data"]), 10)
+        self.assertIn(reverse('invoice-list') + "?page=2", response.data["next"])
+        self.assertEqual(response.data["previous"], None)
+
+        response = self.client.get(reverse('invoice-list') + "?page=2")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["results"]["data"]), 5)
+        self.assertEqual(response.data["next"], None)
+        self.assertIn(reverse('invoice-list'), response.data["previous"])
+
+        self.assertEqual(response.data["count"], 15)
 
 class InvoicePaginationSearchTests(APITestCase):
 
