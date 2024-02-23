@@ -5,6 +5,8 @@ class Invoice(models.Model):
     id = models.CharField(primary_key=True, max_length=36, default=uuid.uuid4, editable=False)
     customer_name = models.CharField(max_length=100, blank=False, null=False)
     invoice_date = models.DateField(blank=False, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         db_table = 'invoice'
