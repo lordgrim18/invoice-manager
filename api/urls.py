@@ -12,6 +12,18 @@ urlpatterns = [
         InvoiceAPIView.as_view(), 
         name='invoice-list'
         ), #get list
+
+    path(
+        'invoice/get/minimal/',
+        InvoiceListMinimalAPIView.as_view(),
+        name='invoice-list-minimal'
+        ), #get minimal list
+
+    path(
+        'invoice/get/<str:invoice_id>/',
+        SingleInvoiceAPIView.as_view(),
+        name='single-invoice'
+        ), #get single invoice
     path(
         'invoice/update/<str:invoice_id>/', 
         InvoiceAPIView.as_view(), 
@@ -27,18 +39,6 @@ urlpatterns = [
         InvoiceAPIView.as_view(),
         name='invoice-delete'
         ), #delete
-
-    path(
-        'invoice/get/minimal/',
-        InvoiceListMinimalAPIView.as_view(),
-        name='invoice-list-minimal'
-        ), #get minimal list
-
-    path(
-        'invoice/get/<str:invoice_id>/',
-        SingleInvoiceAPIView.as_view(),
-        name='single-invoice'
-        ), #get single invoice
 
     path(
         'invoice-detail/partial-update/<str:invoice_detail_id>/', 
