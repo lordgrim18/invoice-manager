@@ -10,6 +10,9 @@ class Invoice(models.Model):
         db_table = 'invoice'
         ordering = ['-invoice_date']
 
+    def __str__(self):
+        return self.customer_name
+
 class InvoiceDetail(models.Model):
     id = models.CharField(primary_key=True, max_length=36, default=uuid.uuid4, editable=False)
     invoice = models.ForeignKey(Invoice, related_name='invoice_details', on_delete=models.CASCADE)
@@ -23,3 +26,6 @@ class InvoiceDetail(models.Model):
     class Meta:
         db_table = 'invoice_detail'
         ordering = ['-created_at', 'invoice']
+
+    def __str__(self):
+        return self.description

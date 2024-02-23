@@ -599,3 +599,129 @@ class InvoiceAPITestCase(APITestCase):
                         )
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class InvoicePaginationTests(APITestCase):
+    
+        def setUp(self):
+            Invoice.objects.bulk_create(
+                [Invoice(customer_name=f"Customer {i}", invoice_date=f"2023-02-{23-i}") for i in range(1, 16)]
+            )
+    
+        def test_pagination(self):
+            response = self.client.get(reverse('invoice-list'))
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(response.data["results"]["data"]), 10)
+            self.assertIn(reverse('invoice-list') + "?page=2", response.data["next"])
+            self.assertEqual(response.data["previous"], None)
+    
+            response = self.client.get(reverse('invoice-list') + "?page=2")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(response.data["results"]["data"]), 5)
+            self.assertEqual(response.data["next"], None)
+            self.assertIn(reverse('invoice-list'), response.data["previous"])
+
+            self.assertEqual(response.data["count"], 15)
+
+class InvoicePaginationSearchTests(APITestCase):
+
+    def setUp(self):
+        Invoice.objects.create(customer_name="Alice", invoice_date="2023-02-22")
+        Invoice.objects.create(customer_name="Bob", invoice_date="2023-02-21")
+        InvoiceDetail.objects.create(
+            invoice=Invoice.objects.get(customer_name="Alice"), description="Laptop", quantity=1, unit_price=1000, price=1000
+        )
+
+    def test_search_by_customer_name(self):
+        response = self.client.get(reverse('invoice-list') + "?search=Alice")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["results"].get("data")), 1)
+        self.assertEqual(response.data['results']['data'][0]['customer_name'], "Alice")
+
+    def test_search_by_invoice_detail_description(self):
+        response = self.client.get(reverse('invoice-list') + "?search=Laptop")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["results"].get("data")), 1)
+        self.assertEqual(
+            response.data['results']['data'][0]['invoice_details'][0]['description'], "Laptop"
+        )
+    
+    def test_search_no_results(self):
+        response = self.client.get(reverse('invoice-list') + "?search=foobar")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["results"].get("data")), 0)
+
+class InvoicePaginationSortTests(APITestCase):
+
+    def setUp(self):
+        invoices = [
+            Invoice.objects.create(
+                customer_name=f"Customer {i}", invoice_date=f"2023-02-{23-i}"
+            )
+            for i in range(1, 5)
+        ]
+        for index, invoice in enumerate(invoices, start=1):
+            InvoiceDetail.objects.create(invoice=invoice, quantity=index, unit_price=index*10, price=index*10*index) 
+
+    def test_sort_by_customer_name_asc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=customer")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["customer_name"] for d in response.data["results"]["data"]],
+            ["Customer 1", "Customer 2", "Customer 3", "Customer 4"],
+        )
+
+    def test_sort_by_customer_name_desc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=-customer")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["customer_name"] for d in response.data["results"]["data"]],
+            ["Customer 4", "Customer 3", "Customer 2", "Customer 1"],
+        )
+
+    def test_sort_by_date_asc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=date")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["invoice_date"] for d in response.data["results"]["data"]],
+            ['2023-02-19', '2023-02-20', '2023-02-21', '2023-02-22'],
+        )
+    
+    def test_sort_by_date_desc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=-date")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["invoice_date"] for d in response.data["results"]["data"]],
+            ['2023-02-22', '2023-02-21', '2023-02-20', '2023-02-19'],
+        )
+
+    def test_sort_by_invoice_detail_quantity_asc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=quantity")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["invoice_details"][0]["quantity"] for d in response.data["results"]["data"]],
+            [1, 2, 3, 4],
+        )
+
+    def test_sort_by_invoice_detail_quantity_desc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=-quantity")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["invoice_details"][0]["quantity"] for d in response.data["results"]["data"]],
+            [4, 3, 2, 1],
+        )
+
+    def test_sort_by_invoice_detail_price_asc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=price")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["invoice_details"][0]["price"] for d in response.data["results"]["data"]],
+            [10, 40, 90, 160],
+        )
+    
+    def test_sort_by_invoice_detail_price_desc(self):
+        response = self.client.get(reverse('invoice-list') + "?sort=-price")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [d["invoice_details"][0]["price"] for d in response.data["results"]["data"]],
+            [160, 90, 40, 10],
+        )
