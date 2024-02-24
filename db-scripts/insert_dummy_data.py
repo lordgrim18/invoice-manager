@@ -2,7 +2,9 @@ import sqlite3
 import uuid
 
 def insert_dummy_data(db_path):
-    """Inserts dummy data into the 'invoice' and 'invoice_detail' tables.
+    """
+    Inserts dummy data into the 'invoice' and 'invoice_detail' tables.
+    Can be used to test the API, particularly the pagination feature.
 
     Args:
         db_path (str): The path to the SQLite database file.

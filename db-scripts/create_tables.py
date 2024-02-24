@@ -2,7 +2,11 @@ import sqlite3
 import uuid
 
 def create_tables(db_path):
-    """Creates the 'invoice' and 'invoice_detail' tables in an SQLite database.
+    """
+    Creates the 'invoice' and 'invoice_detail' tables in an SQLite database.
+    We use this function to create the tables and not the migrate function of Django to keep a much more tight control on our API.
+    Moreover, useless tables are not created in the database.
+
 
     Args:
         db_path (str): The path to the SQLite database file.
