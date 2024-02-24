@@ -26,17 +26,17 @@ urlpatterns = [
         ), #get single invoice
     path(
         'invoice/update/<str:invoice_id>/', 
-        InvoiceAPIView.as_view(), 
+        SingleInvoiceAPIView.as_view(), 
         name='invoice-update'
         ), #put
     path(
         'invoice/partial-update/<str:invoice_id>/', 
-        InvoiceAPIView.as_view(), 
+        SingleInvoiceAPIView.as_view(), 
         name='invoice-partial-update'
         ), #patch
     path(
         'invoice/delete/<str:invoice_id>/', 
-        InvoiceAPIView.as_view(),
+        SingleInvoiceAPIView.as_view(),
         name='invoice-delete'
         ), #delete
 
