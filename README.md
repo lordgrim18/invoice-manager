@@ -90,8 +90,9 @@ python manage.py test
 
 The API provides the following endpoints:
 
-- **Create Invoice**: `POST /invoice/create/`
 - **List Invoices**: `GET /invoice/`
+- **Create Invoice**: `POST /invoice/create/`
+- 
 - **List Invoices Minimal**: `GET /invoice/get/minimal/`
 - 
 - **View Single Invoice**: `GET /invoice/get/<invoice_id>/`
