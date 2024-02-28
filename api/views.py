@@ -125,7 +125,7 @@ class SingleInvoiceAPIView(APIView):
         invoice.delete()
         return CustomResponse("invoice", "deletion").success_response()
 
-class InvoiceDetailAPIView(APIView):
+class InvoiceDetailEditAPIView(APIView):
     """
     API endpoints that allows invoice details to be retrieved and deleted.
     The following methods have been implemented:
@@ -136,11 +136,6 @@ class InvoiceDetailAPIView(APIView):
 
     - delete : delete an existing invoice detail
 
-    - post   : create a new invoice detail
-             : enter the description, quantity, unit price and price if needed in the request body
-             : note that the invoice id must be entered in the request body
-             : this method is used to add new details to an existing invoice
-             
     """
     def patch(self, request, invoice_detail_id):
         if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
@@ -160,6 +155,17 @@ class InvoiceDetailAPIView(APIView):
         invoice_detail.delete()
         return CustomResponse("invoice detail", "deletion").success_response()
     
+class InvoiceDetailCreateAPIView(APIView):
+    """
+    API endpoint that allows invoice details to be created.
+    The following method has been implemented:
+
+    - post   : create a new invoice detail
+             : enter the description, quantity, unit price in the request body
+             : note that the invoice id must be present in the request params
+             : this method is used to add new details to an existing invoice
+             
+    """
     def post(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
             return CustomResponse(
