@@ -4,7 +4,7 @@ from datetime import datetime
 from django.utils import timezone
 
 class InvoiceDetailSerializer(serializers.ModelSerializer):
-    # id = serializers.CharField(read_only=True)
+    id = serializers.CharField(read_only=True)
     price = serializers.FloatField(required=False)
 
     class Meta:
@@ -42,7 +42,7 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
         return instance
     
 class InvoiceSerializer(serializers.ModelSerializer):
-    # id = serializers.CharField(read_only=True)
+    id = serializers.CharField(read_only=True)
     invoice_details = InvoiceDetailSerializer(many=True)
     invoice_date = serializers.DateField(required=False)
     
@@ -99,12 +99,3 @@ class InvoiceSerializer(serializers.ModelSerializer):
             })
         
         return data
-    
-class MinimalInvoiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Invoice
-        fields = [
-            'id',
-            'customer_name', 
-            'invoice_date'
-            ]

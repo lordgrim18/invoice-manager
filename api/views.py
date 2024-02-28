@@ -68,40 +68,6 @@ class InvoiceAPIView(APIView):
             "data": serializer.data
             })
 
-class InvoiceListMinimalAPIView(APIView):
-    """
-    API endpoints that allows all the invoices to be retrieved, but in a minimal format.
-    The following method has been implemented:
-
-    - get : retrieve all invoices
-          : returns a list of all invoices containing only the invoice id, customer name and invoice date
-          : search and sort can be done using the customer name or invoice date
-          : is useful while viewing single invoice or updating or deleting an invoice
-    """
-    def get(self, request):
-        invoices = Invoice.objects.all()
-        search_query = request.query_params.get('search', None)
-        if search_query:
-            invoices = invoices.filter(
-                Q(customer_name__icontains=search_query) | 
-                Q(invoice_date__icontains=search_query)
-                   ).distinct()
-            
-        sort_by_fields = {
-            "customer": "customer_name",
-            "date": "invoice_date"
-        }
-        sort_by = request.query_params.get('sort')
-        if sort_by:
-            if sort_by.startswith("-"):
-                sort_by = f"-{sort_by_fields.get(sort_by[1:], 'invoice_date')}"
-            else:
-                sort_by = sort_by_fields.get(sort_by, '-invoice_date')
-            invoices = invoices.order_by(sort_by)
-        
-        serializer = MinimalInvoiceSerializer(invoices, many=True)
-        return CustomResponse("invoice", "minimal-retrieval", data=serializer.data).success_response()
-
 class SingleInvoiceAPIView(APIView):
     """
     API endpoints that allows a single invoice to be retrieved.
