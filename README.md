@@ -93,8 +93,6 @@ The API provides the following endpoints:
 - **List Invoices**: `GET /invoice/`
 - **Create Invoice**: `POST /invoice/create/`
 - 
-- **List Invoices Minimal**: `GET /invoice/get/minimal/`
-- 
 - **View Single Invoice**: `GET /invoice/get/<invoice_id>/`
 - **Update Invoice**: `PUT /invoice/update/<invoice_id>/`
 - **Partial Update Invoice**: `PATCH /invoice/partial-update/<invoice_id>/`
@@ -102,4 +100,5 @@ The API provides the following endpoints:
 - 
 - **Partial Update Invoice Detail**: `PATCH /invoice-detail/partial-update/<invoice_detail_id>/`
 - **Delete Invoice Detail**: `DELETE /invoice-detail/delete/<invoice_detail_id>/`
+- 
 - **Create Invoice Detail**: `POST /invoice-detail/create/<invoice_id>/`
