@@ -17,11 +17,6 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
             'price'
             ]
 
-    def validate_price(self, value):
-        if value < 0:
-            raise serializers.ValidationError("Price cannot be less than 0")
-        return value
-    
     def validate_quantity(self, value):
         if value < 0:
             raise serializers.ValidationError("Quantity cannot be less than 0")
@@ -33,24 +28,16 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, data):
-        request = self.context.get('request')
-        if not request.method == 'PATCH':
-            if not data.get('price'):
-                data['price'] = float(data.get('quantity')) * float(data.get('unit_price'))
-            return data
-        else:
-            if not data:
-                raise serializers.ValidationError("request body cannot be empty")
+        if not data:
+            raise serializers.ValidationError("request body cannot be empty")
+        data['price'] = float(data.get('quantity')) * float(data.get('unit_price'))
         return data
         
     def update(self, instance, validated_data):
         instance.description = validated_data.get('description', instance.description)
         instance.quantity = validated_data.get('quantity', instance.quantity)
         instance.unit_price = validated_data.get('unit_price', instance.unit_price)
-        instance.price = validated_data.get('price', instance.price)
-        if validated_data.get('quantity') or validated_data.get('unit_price'):
-            if not validated_data.get('price'):
-                instance.price = float(instance.quantity) * float(instance.unit_price)
+        instance.price = instance.unit_price * instance.quantity
         instance.save()
         return instance
     
