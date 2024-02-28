@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
-from .serializer import InvoiceSerializer, InvoiceDetailSerializer, MinimalInvoiceSerializer
+from .serializer import InvoiceSerializer, InvoiceDetailSerializer
 from .models import Invoice, InvoiceDetail
 from .utils import CustomResponse
 

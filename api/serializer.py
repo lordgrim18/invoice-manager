@@ -10,7 +10,7 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceDetail
         fields = [
-            # 'id',
+            'id',
             'description', 
             'quantity', 
             'unit_price', 
@@ -49,7 +49,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invoice
         fields = [
-            # 'id',
+            'id',
             'customer_name', 
             'invoice_date', 
             'invoice_details'
