@@ -30,7 +30,11 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if not data:
             raise serializers.ValidationError("request body cannot be empty")
-        data['price'] = float(data.get('quantity')) * float(data.get('unit_price'))
+        
+        request = self.context.get('request')
+        if not request.method == 'PATCH':
+            data['price'] = float(data.get('quantity')) * float(data.get('unit_price'))
+            return data
         return data
         
     def update(self, instance, validated_data):
