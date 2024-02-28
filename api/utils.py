@@ -56,7 +56,7 @@ class CustomResponse:
         """
         return self.generate_response(
             error=False, 
-            general_message=f"Successful {self.action} of {self.resource} objects" if not message else message,
+            general_message=f"Successful {self.action} of {self.resource} object(s)" if not message else message,
             status_code=status.HTTP_200_OK
             )
 
@@ -67,7 +67,7 @@ class CustomResponse:
         """
         return self.generate_response(
             error=False, 
-            general_message=f"Successful created new object" if not message else message,
+            general_message=f"Successfully created new object" if not message else message,
             status_code=status.HTTP_201_CREATED
             )
 

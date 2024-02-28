@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
-from .serializer import InvoiceSerializer, InvoiceDetailSerializer, MinimalInvoiceSerializer
+from .serializer import InvoiceSerializer, InvoiceDetailSerializer
 from .models import Invoice, InvoiceDetail
 from .utils import CustomResponse
 
@@ -68,40 +68,6 @@ class InvoiceAPIView(APIView):
             "data": serializer.data
             })
 
-class InvoiceListMinimalAPIView(APIView):
-    """
-    API endpoints that allows all the invoices to be retrieved, but in a minimal format.
-    The following method has been implemented:
-
-    - get : retrieve all invoices
-          : returns a list of all invoices containing only the invoice id, customer name and invoice date
-          : search and sort can be done using the customer name or invoice date
-          : is useful while viewing single invoice or updating or deleting an invoice
-    """
-    def get(self, request):
-        invoices = Invoice.objects.all()
-        search_query = request.query_params.get('search', None)
-        if search_query:
-            invoices = invoices.filter(
-                Q(customer_name__icontains=search_query) | 
-                Q(invoice_date__icontains=search_query)
-                   ).distinct()
-            
-        sort_by_fields = {
-            "customer": "customer_name",
-            "date": "invoice_date"
-        }
-        sort_by = request.query_params.get('sort')
-        if sort_by:
-            if sort_by.startswith("-"):
-                sort_by = f"-{sort_by_fields.get(sort_by[1:], 'invoice_date')}"
-            else:
-                sort_by = sort_by_fields.get(sort_by, '-invoice_date')
-            invoices = invoices.order_by(sort_by)
-        
-        serializer = MinimalInvoiceSerializer(invoices, many=True)
-        return CustomResponse("invoice", "minimal-retrieval", data=serializer.data).success_response()
-
 class SingleInvoiceAPIView(APIView):
     """
     API endpoints that allows a single invoice to be retrieved.
@@ -159,7 +125,7 @@ class SingleInvoiceAPIView(APIView):
         invoice.delete()
         return CustomResponse("invoice", "deletion").success_response()
 
-class InvoiceDetailAPIView(APIView):
+class InvoiceDetailEditAPIView(APIView):
     """
     API endpoints that allows invoice details to be retrieved and deleted.
     The following methods have been implemented:
@@ -170,11 +136,6 @@ class InvoiceDetailAPIView(APIView):
 
     - delete : delete an existing invoice detail
 
-    - post   : create a new invoice detail
-             : enter the description, quantity, unit price and price if needed in the request body
-             : note that the invoice id must be entered in the request body
-             : this method is used to add new details to an existing invoice
-             
     """
     def patch(self, request, invoice_detail_id):
         if not InvoiceDetail.objects.filter(id=invoice_detail_id).exists():
@@ -194,6 +155,17 @@ class InvoiceDetailAPIView(APIView):
         invoice_detail.delete()
         return CustomResponse("invoice detail", "deletion").success_response()
     
+class InvoiceDetailCreateAPIView(APIView):
+    """
+    API endpoint that allows invoice details to be created.
+    The following method has been implemented:
+
+    - post   : create a new invoice detail
+             : enter the description, quantity, unit price in the request body
+             : note that the invoice id must be present in the request params
+             : this method is used to add new details to an existing invoice
+             
+    """
     def post(self, request, invoice_id):
         if not Invoice.objects.filter(id=invoice_id).exists():
             return CustomResponse(

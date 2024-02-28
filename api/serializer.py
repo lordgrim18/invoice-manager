@@ -4,24 +4,19 @@ from datetime import datetime
 from django.utils import timezone
 
 class InvoiceDetailSerializer(serializers.ModelSerializer):
-    # id = serializers.CharField(read_only=True)
+    id = serializers.CharField(read_only=True)
     price = serializers.FloatField(required=False)
 
     class Meta:
         model = InvoiceDetail
         fields = [
-            # 'id',
+            'id',
             'description', 
             'quantity', 
             'unit_price', 
             'price'
             ]
 
-    def validate_price(self, value):
-        if value < 0:
-            raise serializers.ValidationError("Price cannot be less than 0")
-        return value
-    
     def validate_quantity(self, value):
         if value < 0:
             raise serializers.ValidationError("Quantity cannot be less than 0")
@@ -33,36 +28,32 @@ class InvoiceDetailSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, data):
+        if not data:
+            raise serializers.ValidationError("request body cannot be empty")
+        
         request = self.context.get('request')
         if not request.method == 'PATCH':
-            if not data.get('price'):
-                data['price'] = float(data.get('quantity')) * float(data.get('unit_price'))
+            data['price'] = float(data.get('quantity')) * float(data.get('unit_price'))
             return data
-        else:
-            if not data:
-                raise serializers.ValidationError("request body cannot be empty")
         return data
         
     def update(self, instance, validated_data):
         instance.description = validated_data.get('description', instance.description)
         instance.quantity = validated_data.get('quantity', instance.quantity)
         instance.unit_price = validated_data.get('unit_price', instance.unit_price)
-        instance.price = validated_data.get('price', instance.price)
-        if validated_data.get('quantity') or validated_data.get('unit_price'):
-            if not validated_data.get('price'):
-                instance.price = float(instance.quantity) * float(instance.unit_price)
+        instance.price = instance.unit_price * instance.quantity
         instance.save()
         return instance
     
 class InvoiceSerializer(serializers.ModelSerializer):
-    # id = serializers.CharField(read_only=True)
+    id = serializers.CharField(read_only=True)
     invoice_details = InvoiceDetailSerializer(many=True)
     invoice_date = serializers.DateField(required=False)
     
     class Meta:
         model = Invoice
         fields = [
-            # 'id',
+            'id',
             'customer_name', 
             'invoice_date', 
             'invoice_details'
@@ -112,12 +103,3 @@ class InvoiceSerializer(serializers.ModelSerializer):
             })
         
         return data
-    
-class MinimalInvoiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Invoice
-        fields = [
-            'id',
-            'customer_name', 
-            'invoice_date'
-            ]
